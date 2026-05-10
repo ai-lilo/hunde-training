@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- iOS-style rounded background -->
+  <rect width="512" height="512" rx="115" fill="url(#bg)"/>
+  <!-- Subtle top shine -->
+  <rect width="512" height="512" rx="115" fill="url(#shine)"/>
+
+  <!-- ══ DOG SILHOUETTE (white) ══ -->
+  <g fill="white">
+
+    <!-- Left floppy ear -->
+    <ellipse cx="188" cy="172" rx="42" ry="68" transform="rotate(-18 188 172)"/>
+
+    <!-- Right floppy ear -->
+    <ellipse cx="324" cy="172" rx="42" ry="68" transform="rotate(18 324 172)"/>
+
+    <!-- Head -->
+    <circle cx="256" cy="178" r="88"/>
+
+    <!-- Neck -->
+    <rect x="208" y="248" width="96" height="80" rx="32"/>
+
+    <!-- Body (sitting haunches) -->
+    <ellipse cx="256" cy="375" rx="148" ry="118"/>
+
+    <!-- Front left leg -->
+    <rect x="178" y="440" width="44" height="68" rx="22"/>
+
+    <!-- Front right leg -->
+    <rect x="290" y="440" width="44" height="68" rx="22"/>
+
+    <!-- Tail (curling right side) -->
+    <path d="M 390,348 Q 448,308 444,242 Q 440,196 412,204
+             Q 390,212 396,254 Q 402,288 378,338 Z"/>
+  </g>
+
+  <!-- ══ FACE DETAILS (deep blue on white) ══ -->
+
+  <!-- Left eye -->
+  <circle cx="222" cy="164" r="18" fill="#1e3a8a"/>
+  <circle cx="229" cy="157" r="6" fill="white" opacity="0.55"/>
+
+  <!-- Right eye -->
+  <circle cx="290" cy="164" r="18" fill="#1e3a8a"/>
+  <circle cx="297" cy="157" r="6" fill="white" opacity="0.55"/>
+
+  <!-- Nose -->
+  <ellipse cx="256" cy="228" rx="20" ry="14" fill="#1e3a8a"/>
+
+  <!-- Mouth -->
+  <path d="M 232,245 Q 256,262 280,245"
+        stroke="#1e3a8a" stroke-width="6"
+        fill="none" stroke-linecap="round"/>
+
+  <!-- Small collar dot (sporty accent) -->
+  <circle cx="256" cy="302" r="10" fill="#93c5fd"/>
+</svg>
