@@ -75,6 +75,7 @@ Sitz auf Signal, gerade, ohne Stützen
 - pruefungsreif: Sitz aus der Bewegung, gerade, auch in belebter Umgebung
 
 **tipps:**
+BH-Sitz aus der Bewegung (10 Pkt): HZ "Sitz" während HF-Bewegung (ohne Tempoänderung, ohne Umschauen) oder alternativ HF bleibt stehen, dann HZ. Hund setzt sich selbstsicher und frei. HF entfernt sich mind. 15 Schritte, dreht sich zum Hund. Auf RA kehrt HF in Normalgang direkt in Grundstellung zurück – kein Abruf. Fehler: langsames Hinsetzen, fehlende Selbstsicherheit, unruhiges/unaufmerksames Sitzen. Stehen oder Liegen = max. 50 % Punktabzug.
 
 
 ---
@@ -127,22 +128,6 @@ Hund verbleibt in Sitz/Platz bei Distanz und Dauer
 
 ---
 
-### abruf – Abruf (Recall)
-
-**description:**
-Hund kommt zuverlässig auf Signal, gerade Ankunft
-
-**criteria:**
-- aufbau: Hund kommt auf Signal in ruhiger Umgebung ohne Ablenkung
-- basis: Abruf in vertrauter Umgebung zuverlässig, gerader Einlauf
-- stabil: Abruf auch bei mittlerer Ablenkung (andere Hunde, Menschen)
-- pruefungsreif: Abruf aus dem Ablegen, gerader Einlauf, Frontsitz, Einordnung
-
-**tipps:**
-
-
----
-
 ### fuss_leine – Fuß an der Leine
 
 **description:**
@@ -155,6 +140,7 @@ Lockere Leine, Hund auf Höhe des linken Knies
 - pruefungsreif: BH-konforme Führarbeit mit Kehrtwendung, Tempo, Ablenkung
 
 **tipps:**
+BH-Sequenz (Leinenführigkeit, 30 Pkt): mind. 50 Schritte geradeaus → Kehrtwendung nach links (Hund kann rechts um HF herumlaufen oder auf Kniehöhe bleiben) → Laufschritt (10–15 Schritte) → langsamer Schritt (10–15 Schritte) → Normalschritt → Stehenbleiben. Danach: Gruppe mind. 4 bewegender Personen durchqueren (eine links, eine rechts umrunden, einmal anhalten). Beim Gangartwechsel darf jeweils ein HZ "Fuß" gegeben werden. Übergang Laufschritt → langsamer Schritt ohne Zwischenschritte. Fehler: Vorlaufen, seitliches Abweichen, Zurückbleiben, langsames/zögerliches Setzen, Körperhilfen, mangelnde Arbeitsfreude.
 
 
 ---
@@ -175,18 +161,36 @@ Fuß ohne Leine, Hund bleibt freiwillig auf Position
 
 ---
 
-### ablegen_herankommen – Ablegen mit Herankommen
+### Ablage mit Herankommen
 
 **description:**
 Hund liegt auf Distanz, kommt auf Signal gerade heran
 
 **criteria:**
 - aufbau: Hund bleibt im Platz bei kurzer Distanz, kommt auf Signal
-- basis: Ablegen auf 5m, zuverlässiger Abruf, gerader Einlauf
-- stabil: Ablegen auf 10m, Frontsitz, Einordnung
-- pruefungsreif: BH-konform: Ablegen mit Vorbeilaufen der Trainerin, Abruf
+- basis: Ablegen auf 5 Schritte, zuverlässiger Abruf, gerader Einlauf
+- stabil: Ablegen auf 15 Schritte, direkter Einlauf zur Endgrundstellung
+- pruefungsreif: BH-konform: HZ während Bewegung, mind. 30 Schritte Distanz, Abruf, freudig direkt in Endgrundstellung
 
 **tipps:**
+BH-Ablegen mit Herankommen (10 Pkt): HZ "Platz" während HF-Bewegung (ohne Umschauen/Tempoänderung) oder nach Stehenbleiben. HF geht mind. 30 weitere Schritte, dreht sich zum Hund. Hund bleibt ruhig und aufmerksam liegen. Auf RA Abruf mit HZ "Herankomm en" oder Rufname (Rufname + HZ = Doppel-HZ). Hund muss freudig, zielstrebig, direkt kommen → direkt in Endgrundstellung (bei BH kein Frontsitz). Fehler: langsames/zögerndes Ablegen, unruhiges Liegen, kein zielstrebiger Zulauf. Nicht kommen auf 2. Zusatz-HZ = Mangelhaft, 0 Pkt.
+
+
+---
+
+### ablegen_ablenkung – Ablegen unter Ablenkung
+
+**description:**
+Hund liegt ruhig abgeleint, während der andere Hund des Teams seine Übungen absolviert
+
+**criteria:**
+- aufbau: Hund bleibt abgeleint ruhig liegen, HF steht seitwärts gewandt, kurze Dauer (30 Sek.)
+- basis: Hund bleibt 1–2 Min. ruhig liegen, auch wenn HF sich seitwärts dreht und nicht zuschaut
+- stabil: Hund bleibt ruhig liegen, während anderer Hund im Sichtfeld aktiv arbeitet
+- pruefungsreif: BH-konform: vollständige Übungsabfolge des Partners abwarten ohne HF-Einwirkung, Ablageposition nicht >1 m verlassen, beim Abholen nicht dem HF entgegengehen
+
+**tipps:**
+BH-Ablegen unter Ablenkung (10 Pkt): Hund abgeleint (Leine eingesteckt/umgehängt). Auf RA bleibt HF stehen und dreht sich seitwärts zum Hund. Hund liegt ohne jede HF-Einwirkung ruhig, während der Übungshund arbeitet. Auf RA kehrt HF zum Hund, stellt sich daneben. Auf erneute RA: in Endgrundstellung und anleinen. Fehler: unruhiges Verhalten, Hilfen des HF, zu frühes Aufstehen oder Hinsetzen. Verlassen der Position >3 m = 0 Pkt. HF beim Abholen entgegengehen = bis –3 Pkt.
 
 
 ---
@@ -202,9 +206,10 @@ Ruhiges Verhalten bei Personengruppen, Begrüßungen, Trubel
 - aufbau: Hund ist an ruhigen Passanten vorbeiführbar
 - basis: Hund bleibt ruhig bei Personengruppen auf mittlerem Abstand
 - stabil: Hund ignoriert Menschen in der Nähe, auch wenn diese aktiv sind
-- pruefungsreif: Hund zeigt kein Reaktionsverhalten im städtischen Umfeld
+- pruefungsreif: Hund zeigt kein Reaktionsverhalten im städtischen Umfeld bei allen BH-Szenarien
 
 **tipps:**
+BH-Verkehrsteil (keine Einzelpunkte): 1) Passant schneidet Weg des HF – Hund neutral/unbeeindruckt. 2) Durch aufgelockerte Gruppe mind. 6 Personen: eine Person spricht HF an und begrüßt mit Handschlag → Hund sitzt/liegt auf HZ ruhig daneben während kurzer Unterhaltung. 3) Begegnung mit Joggern/Inline-Skatern: mind. 2 Jogger überholen (ohne Tempoabnahme), wenden und kommen entgegen. Hund darf nicht belästigen; HF kann Sitz/Platz anweisen.
 
 
 ---
@@ -218,9 +223,10 @@ Neutral-ruhiges Verhalten beim Vorbeilaufen an anderen Hunden
 - aufbau: Hund ist mit großem Abstand an anderen Hunden vorbeiführbar
 - basis: Hund orientiert sich zur Trainerin bei Hundebegegnungen (mittlerer Abstand)
 - stabil: Hund passiert andere Hunde auf kurze Distanz ohne Reaktion
-- pruefungsreif: Hund läuft an angeleinten Hunden vorbei ohne Ablenkung
+- pruefungsreif: Hund neutral beim Überholen und Entgegenkommen; nimmt auf HZ Sitz/Platz ein
 
 **tipps:**
+BH-Verkehrsteil: Beim Überholen und Entgegenkommen eines anderen Hundes mit HF hat sich der Hund neutral zu verhalten; HF kann Hund auf Anweisung in Sitz- oder Platzposition bringen. Separate Situation "Allein gelassen": Passant mit angeleinetem Hund geht ca. 5 Schritte seitlich vorbei, während Prüfungshund angebunden ist (→ Anbinden-Übung).
 
 
 ---
@@ -234,9 +240,10 @@ Gelassenheit gegenüber Autos, Motorrädern, LKW
 - aufbau: Hund reagiert nicht auf vorbeifahrende Fahrzeuge aus Distanz
 - basis: Hund bleibt ruhig bei Fahrzeugverkehr auf dem Gehweg
 - stabil: Hund zeigt keine Reaktion auch bei lautem/schnellem Verkehr
-- pruefungsreif: Verkehrsruhig in jeder Alltagssituation
+- pruefungsreif: Verkehrsruhig in jeder Alltagssituation; gelassen bei BH-spezifischen Szenarien
 
 **tipps:**
+BH-Verkehrsteil: HF geht mit Hund an mehreren Autos vorbei. Drei Szenarien: 1) Ein Fahrzeug startet. 2) Autotür wird zugeschlagen. 3) Auto hält neben HF, Scheibe wird heruntergelassen, HF wird um Auskunft gebeten → Hund sitzt/liegt auf HZ dabei. Hund muss ruhig und unbeeindruckt gegenüber Autos und allen Verkehrsgeräuschen sein.
 
 
 ---
@@ -250,9 +257,10 @@ Kein Jagen, kein Anspringen, ruhiges Vorbeilassen
 - aufbau: Hund reagiert nicht auf stehendes Fahrrad
 - basis: Hund lässt langsam fahrendes Fahrrad ruhig vorbei
 - stabil: Hund zeigt keine Reaktion bei schnell fahrenden Rädern
-- pruefungsreif: Zuverlässig auch bei mehreren Radfahrern gleichzeitig
+- pruefungsreif: BH-konform: Radfahrer von hinten und von vorn, mit Klingelzeichen, Hund zwischen HF und Rad
 
 **tipps:**
+BH-Verkehrsteil: Radfahrer überholt HF von hinten mit Klingelzeichen. In großem Abstand wendet der Radfahrer und kommt HF und Hund entgegen (erneut Klingelzeichen). Vorbeifahren so, dass der Hund sich zwischen HF und Radfahrer befindet. Hund muss sich unbefangen zeigen.
 
 
 ---
@@ -266,7 +274,8 @@ Hund wartet ruhig angebunden ohne Trainerin
 - aufbau: Hund bleibt 30 Sek. angebunden, Trainerin in Sichtweite
 - basis: Hund bleibt 2 Min. angebunden, Trainerin außer Sicht
 - stabil: Hund bleibt ruhig angebunden bei Alltagsreizen
-- pruefungsreif: BH-konform: 2 Min. allein, ruhig, kein Problemverhalten
+- pruefungsreif: BH-konform: außer Sicht, angeleinter Hund läuft ~5 Schritte seitlich vorbei, kein anhaltendes Zerren/Bellen
 
 **tipps:**
+BH-Verkehrsteil: Leine wird an Zaun/Mauerring o. Ä. befestigt. HF begibt sich außer Sicht (Geschäft oder Hauseingang). Während der Abwesenheit geht ein Passant mit angeleinetem Hund in ca. 5 Schritten seitlichem Abstand vorbei. Hund darf stehen, sitzen oder liegen. Kein andauerndes Zerren an der Leine, kein anhaltendes Bellen, kein Angriff auf vorbeigeführten Hund. Auf RA wird der Hund vom HF wieder abgeholt.
 

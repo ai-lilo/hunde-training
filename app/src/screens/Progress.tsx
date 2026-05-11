@@ -13,7 +13,7 @@ interface Props {
   onDeleteExercise: (id: string) => void
 }
 
-const LEVEL_ORDER: Level[] = ['aufbau', 'basis', 'stabil', 'pruefungsreif']
+const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif']
 
 const CATEGORY_LABEL: Record<string, string> = {
   grundlage: 'Grundlagen',
@@ -52,7 +52,7 @@ export function Progress({ statuses, allExercises, sessions, onUpdateExercise, o
               </p>
               <div className="flex flex-col gap-2">
                 {exs.map(ex => {
-                  const current = map[ex.id] ?? 'aufbau'
+                  const current = map[ex.id] ?? 'nicht_begonnen'
                   const idx = levelIndex(current)
                   const isCustom = ex.id.startsWith('custom_')
                   const recentSessions = sessions
@@ -118,7 +118,7 @@ export function Progress({ statuses, allExercises, sessions, onUpdateExercise, o
                             <div className="flex flex-wrap gap-1.5">
                               {ex.prerequisites.map(pid => {
                                 const prereq = allExerciseMap[pid] ?? EXERCISE_MAP[pid]
-                                const lvl = map[pid] ?? 'aufbau'
+                                const lvl = map[pid] ?? 'nicht_begonnen'
                                 const met = levelIndex(lvl) >= levelIndex('basis')
                                 return (
                                   <span

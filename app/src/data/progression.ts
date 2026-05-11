@@ -1,7 +1,7 @@
 import type { Exercise, ExerciseStatus, Level } from './types'
 import { EXERCISES } from './exercises'
 
-const LEVEL_ORDER: Level[] = ['aufbau', 'basis', 'stabil', 'pruefungsreif']
+const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif']
 
 export function levelIndex(l: Level): number {
   return LEVEL_ORDER.indexOf(l)
@@ -14,14 +14,14 @@ export function nextLevel(l: Level): Level | null {
 
 export function getStatusMap(statuses: ExerciseStatus[], exercises: Exercise[] = EXERCISES): Record<string, Level> {
   const map: Record<string, Level> = {}
-  for (const e of exercises) map[e.id] = 'aufbau'
+  for (const e of exercises) map[e.id] = 'nicht_begonnen'
   for (const s of statuses) map[s.exerciseId] = s.level
   return map
 }
 
 function prerequisitesMet(exercise: Exercise, statusMap: Record<string, Level>, minLevel: Level = 'basis'): boolean {
   return exercise.prerequisites.every(
-    pid => levelIndex(statusMap[pid] ?? 'aufbau') >= levelIndex(minLevel)
+    pid => levelIndex(statusMap[pid] ?? 'nicht_begonnen') >= levelIndex(minLevel)
   )
 }
 
@@ -92,7 +92,7 @@ function buildReason(
   const blockedExercises = EXERCISES.filter(e =>
     !e.parentId &&
     e.prerequisites.includes(exercise.id) &&
-    levelIndex(map[e.id] ?? 'aufbau') < levelIndex('basis')
+    levelIndex(map[e.id] ?? 'nicht_begonnen') < levelIndex('basis')
   )
 
   if (exercise.id === 'schwellenwert') {
@@ -104,7 +104,7 @@ function buildReason(
     return `Voraussetzung für: ${names}. Aktuell auf "${current}" — Ziel: "${target}".`
   }
 
-  if (exercise.bh_required && current === 'aufbau') {
+  if (exercise.bh_required && (current === 'nicht_begonnen' || current === 'aufbau')) {
     return `BH-Pflichtübung, noch im Aufbau. Kriterium für "${target}": ${exercise.criteria[target]}`
   }
 

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { AppState, Exercise, ExerciseOverride, ExerciseStatus, Level, TrainingSession, TrainingEntry } from '../data/types'
+import type { AppState, Exercise, ExerciseOverride, ExerciseStatus, Level, TrainingSession, TrainingEntry, ROSignStatus, ROSessionEntry } from '../data/types'
 import { CUSTOM_CRITERIA, EXERCISES } from '../data/exercises'
 
-const STORAGE_KEY = 'hundetraining_v1'
+const STORAGE_KEY = 'hundetraining_v2'
 
 function loadState(): AppState {
   try {
@@ -15,10 +15,11 @@ function loadState(): AppState {
         customExercises: parsed.customExercises ?? [],
         exerciseOverrides: parsed.exerciseOverrides ?? {},
         hiddenExerciseIds: parsed.hiddenExerciseIds ?? [],
+        roSignStatuses: parsed.roSignStatuses ?? [],
       }
     }
   } catch { /* ignore */ }
-  return { exerciseStatuses: [], sessions: [], customExercises: [], exerciseOverrides: {}, hiddenExerciseIds: [] }
+  return { exerciseStatuses: [], sessions: [], customExercises: [], exerciseOverrides: {}, hiddenExerciseIds: [], roSignStatuses: [] }
 }
 
 function saveState(state: AppState): void {
@@ -45,10 +46,29 @@ export function useStore() {
     })
   }, [])
 
+  const setROSignLevel = useCallback((signId: string, level: Level) => {
+    setState(prev => {
+      const existing = prev.roSignStatuses.find(s => s.signId === signId)
+      const updated: ROSignStatus = {
+        signId,
+        level,
+        updatedAt: new Date().toISOString(),
+        lastPracticedAt: existing?.lastPracticedAt,
+      }
+      return {
+        ...prev,
+        roSignStatuses: existing
+          ? prev.roSignStatuses.map(s => s.signId === signId ? updated : s)
+          : [...prev.roSignStatuses, updated],
+      }
+    })
+  }, [])
+
   const addSession = useCallback((entries: TrainingEntry[], generalNote: string, date?: string) => {
     const session: TrainingSession = {
       id: crypto.randomUUID(),
       date: date ?? new Date().toISOString(),
+      sport: 'bh',
       entries,
       generalNote,
     }
@@ -56,6 +76,32 @@ export function useStore() {
       ...prev,
       sessions: [session, ...prev.sessions],
       exerciseStatuses: mergeEntriesToStatuses(prev.exerciseStatuses, entries),
+    }))
+  }, [])
+
+  const addROSession = useCallback((signIds: string[], generalNote: string, feedback: Record<string, 'gut' | 'weiter'>, date?: string) => {
+    const now = new Date().toISOString()
+    const roEntries: ROSessionEntry[] = signIds.map(signId => ({ signId }))
+    const session: TrainingSession = {
+      id: crypto.randomUUID(),
+      date: date ?? now,
+      sport: 'ro',
+      entries: [],
+      roEntries,
+      generalNote,
+    }
+    setState(prev => ({
+      ...prev,
+      sessions: [session, ...prev.sessions],
+      roSignStatuses: prev.roSignStatuses.map(s => {
+        if (!signIds.includes(s.signId)) return s
+        const fb = feedback[s.signId]
+        const currentBox = s.leitnerBox ?? 1
+        const newBox = fb === 'gut' ? Math.min(currentBox + 1, 5)
+          : fb === 'weiter' ? 1
+          : currentBox
+        return { ...s, lastPracticedAt: now, leitnerBox: newBox }
+      }),
     }))
   }, [])
 
@@ -112,7 +158,17 @@ export function useStore() {
     })
   }, [])
 
-  return { state, setExerciseLevel, addSession, deleteSession, addCustomExercise, updateExercise, deleteExercise }
+  return {
+    state,
+    setExerciseLevel,
+    setROSignLevel,
+    addSession,
+    addROSession,
+    deleteSession,
+    addCustomExercise,
+    updateExercise,
+    deleteExercise,
+  }
 }
 
 function mergeEntriesToStatuses(

@@ -37,7 +37,7 @@ export function Dashboard({ statuses, allExercises, recentSave, onDismissRecentS
       <div className="pt-2">
         <p className="text-sm text-amber-700 font-medium">Hund</p>
         <h1 className="text-2xl font-bold text-stone-800">Ari</h1>
-        <p className="text-sm text-stone-500">Australian Shepherd · Ausbildung BH + Obedience</p>
+        <p className="text-sm text-stone-500">Australian Shepherd · Begleithundeprüfung</p>
       </div>
 
       {/* ── Gerade gespeichert ── */}
@@ -167,7 +167,7 @@ export function Dashboard({ statuses, allExercises, recentSave, onDismissRecentS
                       {e.name}
                       {justChanged && <span className="ml-1 text-xs text-green-500">↑</span>}
                     </span>
-                    <LevelBadge level={map[e.id] ?? 'aufbau'} />
+                    <LevelBadge level={map[e.id] ?? 'nicht_begonnen'} />
                   </button>
                 )
               })}

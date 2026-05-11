@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { Exercise, TrainingSession } from '../data/types'
+import { RO_SIGNS } from '../data/ro-signs'
 
 interface Props {
   sessions: TrainingSession[]
@@ -21,7 +22,10 @@ function monthLabel(iso: string) {
   return new Date(iso).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })
 }
 
+const roSignMap = Object.fromEntries(RO_SIGNS.map(s => [s.id, s]))
+
 export function Tagebuch({ sessions, allExercises, onDeleteSession }: Props) {
+  const [confirmId, setConfirmId] = useState<string | null>(null)
   const allExerciseMap = useMemo(
     () => Object.fromEntries(allExercises.map(e => [e.id, e])),
     [allExercises]
@@ -79,23 +83,70 @@ export function Tagebuch({ sessions, allExercises, onDeleteSession }: Props) {
               return (
                 <div key={session.id} className="bg-white rounded-xl border border-stone-100 px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-stone-800">{formatDate(session.date)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-stone-800">{formatDate(session.date)}</span>
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                        (session.sport ?? 'bh') === 'ro'
+                          ? 'bg-blue-50 text-blue-600'
+                          : 'bg-amber-50 text-amber-700'
+                      }`}>
+                        {(session.sport ?? 'bh') === 'ro' ? 'RO' : 'BH'}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-stone-400">
-                        {session.entries.length} Übung{session.entries.length !== 1 ? 'en' : ''}
+                        {(session.sport ?? 'bh') === 'ro'
+                          ? `${session.roEntries?.length ?? 0} Schilder`
+                          : `${session.entries.length} Übung${session.entries.length !== 1 ? 'en' : ''}`
+                        }
                       </span>
-                      <button
-                        onClick={() => onDeleteSession(session.id)}
-                        className="text-stone-300 text-sm active:text-red-400 transition-colors"
-                        aria-label="Einheit löschen"
-                      >
-                        ✕
-                      </button>
+                      {confirmId === session.id ? (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => { onDeleteSession(session.id); setConfirmId(null) }}
+                            className="text-xs text-red-500 font-medium active:text-red-700"
+                          >
+                            Löschen
+                          </button>
+                          <span className="text-stone-200">|</span>
+                          <button
+                            onClick={() => setConfirmId(null)}
+                            className="text-xs text-stone-400 active:text-stone-600"
+                          >
+                            Abbrechen
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmId(session.id)}
+                          className="text-stone-300 text-sm active:text-red-400 transition-colors"
+                          aria-label="Einheit löschen"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* Parent-level exercises */}
-                  {parentEntries.length > 0 && (
+                  {/* RO session: show signs */}
+                  {(session.sport ?? 'bh') === 'ro' && session.roEntries && session.roEntries.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-1.5">
+                      {session.roEntries.map(e => {
+                        const sign = roSignMap[e.signId]
+                        return (
+                          <span
+                            key={e.signId}
+                            className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full"
+                          >
+                            {sign ? `${sign.number} ${sign.name}` : e.signId}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* BH session: parent-level exercises */}
+                  {(session.sport ?? 'bh') === 'bh' && parentEntries.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-1.5">
                       {parentEntries.map(e => (
                         <span
@@ -108,8 +159,8 @@ export function Tagebuch({ sessions, allExercises, onDeleteSession }: Props) {
                     </div>
                   )}
 
-                  {/* Sub-exercises (indented, smaller) */}
-                  {subEntries.length > 0 && (
+                  {/* BH session: sub-exercises */}
+                  {(session.sport ?? 'bh') === 'bh' && subEntries.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-1.5">
                       {subEntries.map(e => (
                         <span

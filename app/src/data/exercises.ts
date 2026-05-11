@@ -1,6 +1,8 @@
 import type { Exercise, ExerciseOverride, LevelCriteria } from './types'
 
 const SUB: LevelCriteria = {
+  nicht_begonnen: 'Noch nicht begonnen',
+
   aufbau: 'Im Aufbau – Teilübung bekannt, noch unsicher',
   basis: 'In ruhiger Umgebung zuverlässig',
   stabil: 'Auch mit leichter Ablenkung stabil',
@@ -8,6 +10,8 @@ const SUB: LevelCriteria = {
 }
 
 export const CUSTOM_CRITERIA: LevelCriteria = {
+  nicht_begonnen: 'Noch nicht begonnen',
+
   aufbau: 'Im Aufbau – Übung bekannt, noch unsicher',
   basis: 'In ruhiger Umgebung zuverlässig',
   stabil: 'Auch mit leichter Ablenkung stabil',
@@ -24,6 +28,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Ruhiges Verhalten in der Nähe von Reizen (Menschen, Hunde, Fahrzeuge)',
     prerequisites: [],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund ist mit großem Abstand zu Reizen führbar',
       basis: 'Hund orientiert sich zur Trainerin bei Reizpräsenz auf mittlerem Abstand',
       stabil: 'Hund bleibt bei verschiedenen Reizen in kurzer Distanz ruhig und arbeitsfähig',
@@ -38,6 +44,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Hund wartet auf Signal, greift nicht selbstständig zu/vor',
     prerequisites: [],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund versteht "Warten" bei statischer Übung ohne Ablenkung',
       basis: 'Hund wartet zuverlässig auf Signal bei einfachen Situationen',
       stabil: 'Hund wartet auch bei mittlerer Verlockung (Futter auf Boden, Spielzeug)',
@@ -52,69 +60,14 @@ export const EXERCISES: Exercise[] = [
     description: 'Hund bleibt ruhig wenn Erwartungen nicht sofort erfüllt werden',
     prerequisites: ['impulskontrolle'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund zeigt kein Problemverhalten bei kurzer Wartezeit',
       basis: 'Hund akzeptiert ausbleibende Belohnung ohne Eskalation',
       stabil: 'Hund arbeitet auch nach Fehlern/Korrekturen motiviert weiter',
       pruefungsreif: 'Hund bleibt in stressigen Situationen ausgeglichen',
     },
   },
-  {
-    id: 'target',
-    name: 'Target (Nasentarget)',
-    category: 'grundlage',
-    bh_required: false,
-    description: 'Hund tippt Nase auf Targetscheibe auf Signal',
-    prerequisites: [],
-    criteria: {
-      aufbau: 'Hund tippt Nase auf Targetscheibe auf Signal',
-      basis: 'Target zuverlässig, variabler Abstand und Winkel',
-      stabil: 'Target auf Distanz und bei leichter Ablenkung',
-      pruefungsreif: 'Target als Positionierungshilfe in Übungen sicher eingesetzt',
-    },
-  },
-  {
-    id: 'podest',
-    name: 'Podest',
-    category: 'grundlage',
-    bh_required: false,
-    description: 'Hund steigt auf Podest und bleibt stehen',
-    prerequisites: [],
-    criteria: {
-      aufbau: 'Hund steigt auf Podest und bleibt stehen',
-      basis: 'Podest zuverlässig, verschiedene Podestgrößen',
-      stabil: 'Podest mit Dauer und leichter Ablenkung',
-      pruefungsreif: 'Podest als Trainingsmittel sicher eingesetzt',
-    },
-  },
-  {
-    id: 'spucks_aus',
-    name: 'Spucks aus',
-    category: 'grundlage',
-    bh_required: false,
-    description: 'Hund lässt Gegenstand auf Signal fallen',
-    prerequisites: ['impulskontrolle'],
-    criteria: {
-      aufbau: 'Hund lässt Gegenstand auf Signal fallen',
-      basis: '"Spucks aus" zuverlässig bei bekannten Gegenständen',
-      stabil: 'Auch bei sehr attraktiven Gegenständen',
-      pruefungsreif: 'Zuverlässig in allen Situationen',
-    },
-  },
-  {
-    id: 'rum',
-    name: 'Rum (Drehen)',
-    category: 'grundlage',
-    bh_required: false,
-    description: 'Hund dreht sich auf Signal',
-    prerequisites: [],
-    criteria: {
-      aufbau: 'Hund dreht sich auf Signal in eine Richtung',
-      basis: '"Rum" zuverlässig auf Signal, beide Richtungen',
-      stabil: 'Schnell und präzise, auch mit Ablenkung',
-      pruefungsreif: 'Sauber und prompt in Alltagssituationen',
-    },
-  },
-
   // ─── UNTERORDNUNG ──────────────────────────────────────────────────────────
   {
     id: 'sitz',
@@ -124,6 +77,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Sitz auf Signal, gerade, ohne Stützen',
     prerequisites: [],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund setzt sich auf Signal in ruhiger Umgebung',
       basis: 'Sitz zuverlässig zuhause und in vertrauter Umgebung',
       stabil: 'Sitz auf erstem Signal auch bei leichter Ablenkung',
@@ -147,6 +102,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Ablegen auf Signal, gerade, ruhig',
     prerequisites: [],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund legt sich auf Signal in ruhiger Umgebung ab',
       basis: 'Platz zuverlässig zuhause und in vertrauter Umgebung',
       stabil: 'Platz auf erstem Signal auch bei leichter Ablenkung',
@@ -170,6 +127,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Stehen auf Signal, ohne Vorwärtsbewegung',
     prerequisites: ['sitz', 'platz'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund bleibt auf Signal stehen (aus dem Stand oder aus der Bewegung)',
       basis: 'Steh zuverlässig in ruhiger Umgebung, kurze Dauer',
       stabil: 'Steh auch bei leichter Ablenkung, mittlere Dauer',
@@ -193,6 +152,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Hund verbleibt in Sitz/Platz bei Distanz und Dauer',
     prerequisites: ['sitz', 'platz', 'impulskontrolle'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund bleibt 10 Sek. in Sitz/Platz wenn Trainerin direkt davor steht',
       basis: 'Hund bleibt 30 Sek. bei 3 Schritten Distanz',
       stabil: 'Hund bleibt 1 Min. bei 10 Schritten Distanz, leichte Ablenkung',
@@ -202,12 +163,14 @@ export const EXERCISES: Exercise[] = [
 
   {
     id: 'abruf',
-    name: 'Abruf (Recall)',
+    name: 'Abruf',
     category: 'unterordnung',
     bh_required: true,
     description: 'Hund kommt zuverlässig auf Signal, gerade Ankunft',
     prerequisites: ['sitz', 'schwellenwert'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund kommt auf Signal in ruhiger Umgebung ohne Ablenkung',
       basis: 'Abruf in vertrauter Umgebung zuverlässig, gerader Einlauf',
       stabil: 'Abruf auch bei mittlerer Ablenkung (andere Hunde, Menschen)',
@@ -230,6 +193,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Lockere Leine, Hund auf Höhe des linken Knies',
     prerequisites: ['schwellenwert', 'impulskontrolle'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund versteht Fußposition, kurze Sequenzen ohne Zug',
       basis: 'Leinenführigkeit auf gerader Linie, ruhige Umgebung',
       stabil: 'Fuß an Leine mit Kurven, Tempoänderung, leichter Ablenkung',
@@ -260,6 +225,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Fuß ohne Leine, Hund bleibt freiwillig auf Position',
     prerequisites: ['fuss_leine', 'schwellenwert'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund bleibt kurze Sequenzen ohne Leine auf Fußposition',
       basis: 'Freifolge auf gerader Linie, 20 Sek., ruhige Umgebung',
       stabil: 'Freifolge mit Kehrtwendung und Tempoänderung, leichte Ablenkung',
@@ -292,10 +259,12 @@ export const EXERCISES: Exercise[] = [
     description: 'Hund liegt auf Distanz, kommt auf Signal gerade heran',
     prerequisites: ['platz', 'bleib', 'abruf'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund bleibt im Platz bei kurzer Distanz, kommt auf Signal',
-      basis: 'Ablegen auf 5m, zuverlässiger Abruf, gerader Einlauf',
-      stabil: 'Ablegen auf 10m, Frontsitz, Einordnung',
-      pruefungsreif: 'BH-konform: Ablegen mit Vorbeilaufen der Trainerin, Abruf',
+      basis: 'Ablegen auf 5 Schritte, zuverlässiger Abruf, gerader Einlauf',
+      stabil: 'Ablegen auf 15 Schritte, direkter Einlauf zur Endgrundstellung',
+      pruefungsreif: 'BH-konform: HZ während Bewegung, mind. 30 Schritte Distanz, Abruf, freudig direkt in Endgrundstellung',
     },
   },
   { id: 'abh_ableinen', name: 'Ableinen in Fußposition', category: 'unterordnung', bh_required: false, description: 'Leine abnehmen in Fußposition', prerequisites: [], parentId: 'ablegen_herankommen', criteria: SUB },
@@ -308,6 +277,23 @@ export const EXERCISES: Exercise[] = [
   { id: 'abh_leine_raus', name: 'Leine herausholen', category: 'unterordnung', bh_required: false, description: 'Leine herausholen ohne Lageveränderung', prerequisites: [], parentId: 'ablegen_herankommen', criteria: SUB },
   { id: 'abh_anleinen', name: 'Anleinen in Fußposition', category: 'unterordnung', bh_required: false, description: 'Anleinen in Fußposition', prerequisites: [], parentId: 'ablegen_herankommen', criteria: SUB },
 
+  {
+    id: 'ablegen_ablenkung',
+    name: 'Ablage unter Ablenkung',
+    category: 'unterordnung',
+    bh_required: true,
+    description: 'Hund liegt ruhig abgeleint, während der andere Hund des Teams seine Übungen absolviert',
+    prerequisites: ['platz', 'bleib'],
+    criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
+      aufbau: 'Hund bleibt abgeleint ruhig liegen, HF steht seitwärts gewandt, kurze Dauer (30 Sek.)',
+      basis: 'Hund bleibt 1–2 Min. ruhig liegen, auch wenn HF sich seitwärts dreht und nicht zuschaut',
+      stabil: 'Hund bleibt ruhig liegen, während anderer Hund im Sichtfeld aktiv arbeitet',
+      pruefungsreif: 'BH-konform: vollständige Übungsabfolge des Partners abwarten ohne HF-Einwirkung, Ablageposition nicht >1 m verlassen, beim Abholen nicht dem HF entgegengehen',
+    },
+  },
+
   // ─── VERKEHRSTEIL ──────────────────────────────────────────────────────────
   {
     id: 'verhalten_menschen',
@@ -317,10 +303,12 @@ export const EXERCISES: Exercise[] = [
     description: 'Ruhiges Verhalten bei Personengruppen, Begrüßungen, Trubel',
     prerequisites: ['schwellenwert'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund ist an ruhigen Passanten vorbeiführbar',
       basis: 'Hund bleibt ruhig bei Personengruppen auf mittlerem Abstand',
       stabil: 'Hund ignoriert Menschen in der Nähe, auch wenn diese aktiv sind',
-      pruefungsreif: 'Hund zeigt kein Reaktionsverhalten im städtischen Umfeld',
+      pruefungsreif: 'Hund zeigt kein Reaktionsverhalten im städtischen Umfeld bei allen BH-Szenarien',
     },
   },
   {
@@ -331,10 +319,12 @@ export const EXERCISES: Exercise[] = [
     description: 'Neutral-ruhiges Verhalten beim Vorbeilaufen an anderen Hunden',
     prerequisites: ['schwellenwert'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund ist mit großem Abstand an anderen Hunden vorbeiführbar',
       basis: 'Hund orientiert sich zur Trainerin bei Hundebegegnungen (mittlerer Abstand)',
       stabil: 'Hund passiert andere Hunde auf kurze Distanz ohne Reaktion',
-      pruefungsreif: 'Hund läuft an angeleinten Hunden vorbei ohne Ablenkung',
+      pruefungsreif: 'Hund neutral beim Überholen und Entgegenkommen; nimmt auf HZ Sitz/Platz ein',
     },
   },
   {
@@ -345,10 +335,12 @@ export const EXERCISES: Exercise[] = [
     description: 'Gelassenheit gegenüber Autos, Motorrädern, LKW',
     prerequisites: ['schwellenwert'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund reagiert nicht auf vorbeifahrende Fahrzeuge aus Distanz',
       basis: 'Hund bleibt ruhig bei Fahrzeugverkehr auf dem Gehweg',
       stabil: 'Hund zeigt keine Reaktion auch bei lautem/schnellem Verkehr',
-      pruefungsreif: 'Verkehrsruhig in jeder Alltagssituation',
+      pruefungsreif: 'Verkehrsruhig in jeder Alltagssituation; gelassen bei BH-spezifischen Szenarien',
     },
   },
   {
@@ -359,10 +351,12 @@ export const EXERCISES: Exercise[] = [
     description: 'Kein Jagen, kein Anspringen, ruhiges Vorbeilassen',
     prerequisites: ['schwellenwert', 'impulskontrolle'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund reagiert nicht auf stehendes Fahrrad',
       basis: 'Hund lässt langsam fahrendes Fahrrad ruhig vorbei',
       stabil: 'Hund zeigt keine Reaktion bei schnell fahrenden Rädern',
-      pruefungsreif: 'Zuverlässig auch bei mehreren Radfahrern gleichzeitig',
+      pruefungsreif: 'BH-konform: Radfahrer von hinten und von vorn, mit Klingelzeichen, Hund zwischen HF und Rad',
     },
   },
   {
@@ -373,10 +367,12 @@ export const EXERCISES: Exercise[] = [
     description: 'Hund wartet ruhig angebunden ohne Trainerin',
     prerequisites: ['bleib', 'frustrationstoleranz'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund bleibt 30 Sek. angebunden, Trainerin in Sichtweite',
       basis: 'Hund bleibt 2 Min. angebunden, Trainerin außer Sicht',
       stabil: 'Hund bleibt ruhig angebunden bei Alltagsreizen',
-      pruefungsreif: 'BH-konform: 2 Min. allein, ruhig, kein Problemverhalten',
+      pruefungsreif: 'BH-konform: außer Sicht, angeleinter Hund läuft ~5 Schritte seitlich vorbei, kein anhaltendes Zerren/Bellen',
     },
   },
 
@@ -389,6 +385,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Hund duldet Chip-Kontrolle durch die Richterin ruhig',
     prerequisites: ['schwellenwert'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund duldet Berührung am Hals/Nacken durch Trainerin',
       basis: 'Hund steht ruhig während Chip-Leser genähert wird',
       stabil: 'Chip-Kontrolle durch fremde Person, Hund bleibt ruhig',
@@ -406,6 +404,8 @@ export const EXERCISES: Exercise[] = [
     description: 'Korrekte Anmeldung beim Richter zu Beginn der Prüfung',
     prerequisites: ['fuss_leine', 'schwellenwert'],
     criteria: {
+      nicht_begonnen: 'Noch nicht begonnen',
+
       aufbau: 'Hund läuft in Fußposition zur Richterin',
       basis: 'Anhalten vor Richterin, Hund bleibt ruhig im Sitz',
       stabil: 'Vollständiger Anmeldeablauf in ruhiger Umgebung',
@@ -418,26 +418,6 @@ export const EXERCISES: Exercise[] = [
   { id: 'anm_warten', name: 'Warten', category: 'pruefung', bh_required: false, description: 'Auf Freigabe der Richterin warten', prerequisites: [], parentId: 'anmeldung', criteria: SUB },
   { id: 'anm_weiter', name: 'Weiterlaufen', category: 'pruefung', bh_required: false, description: 'Nach Freigabe weiterlaufen', prerequisites: [], parentId: 'anmeldung', criteria: SUB },
 
-  // ─── SPORT ─────────────────────────────────────────────────────────────────
-  {
-    id: 'canicross',
-    name: 'CaniCross',
-    category: 'sport',
-    bh_required: false,
-    description: 'Gemeinsames Laufen mit Hund im Zuggeschirr',
-    prerequisites: [],
-    criteria: {
-      aufbau: 'Hund versteht Zugimpuls und läuft voraus',
-      basis: 'Grundbefehle (Go, Easy, Stopp) bekannt',
-      stabil: 'Richtungswechsel (Gee/Haw) zuverlässig',
-      pruefungsreif: 'Fließender Lauf mit allen Befehlen',
-    },
-  },
-  { id: 'cc_go', name: 'Go (Vorwärts)', category: 'sport', bh_required: false, description: 'Vorwärtslaufen auf Signal', prerequisites: [], parentId: 'canicross', criteria: SUB },
-  { id: 'cc_easy', name: 'Easy (Verlangsamen)', category: 'sport', bh_required: false, description: 'Verlangsamung auf Signal', prerequisites: [], parentId: 'canicross', criteria: SUB },
-  { id: 'cc_stopp', name: 'Stopp (Anhalten)', category: 'sport', bh_required: false, description: 'Anhalten auf Signal', prerequisites: [], parentId: 'canicross', criteria: SUB },
-  { id: 'cc_gee', name: 'Gee / Dschii (Rechts)', category: 'sport', bh_required: false, description: 'Rechts abbiegen auf Signal', prerequisites: [], parentId: 'canicross', criteria: SUB },
-  { id: 'cc_haw', name: 'Haw / Haa (Links)', category: 'sport', bh_required: false, description: 'Links abbiegen auf Signal', prerequisites: [], parentId: 'canicross', criteria: SUB },
 ]
 
 export const EXERCISE_MAP = Object.fromEntries(EXERCISES.map(e => [e.id, e]))

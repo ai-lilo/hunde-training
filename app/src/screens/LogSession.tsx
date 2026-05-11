@@ -19,6 +19,7 @@ const RATING_LABEL: Record<1 | 2 | 3, { emoji: string; label: string }> = {
 }
 
 const LEVEL_LABEL: Record<Level, string> = {
+  nicht_begonnen: 'Nicht begonnen',
   aufbau: 'Aufbau',
   basis: 'Basis',
   stabil: 'Stabil',
@@ -55,7 +56,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
   function getRating(id: string): 1 | 2 | 3 { return ratings[id] ?? 2 }
   function getNote(id: string): string { return notes[id] ?? '' }
   function getLevel(id: string): Level {
-    const current = map[id] ?? 'aufbau'
+    const current = map[id] ?? 'nicht_begonnen'
     if (levelUpIds.includes(id)) return nextLevel(current) ?? current
     return current
   }
@@ -113,7 +114,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
                 <div className="flex flex-col gap-2">
                   {exs.map(ex => {
                     const isSelected = selectedIds.includes(ex.id)
-                    const currentLevel = map[ex.id] ?? 'aufbau'
+                    const currentLevel = map[ex.id] ?? 'nicht_begonnen'
                     const nextLvl = nextLevel(currentLevel)
                     const subExs = allExercises.filter(e => e.parentId === ex.id)
                     const isLevelUp = levelUpIds.includes(ex.id)

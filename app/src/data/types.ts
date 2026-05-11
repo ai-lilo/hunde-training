@@ -1,7 +1,10 @@
-export type Level = 'aufbau' | 'basis' | 'stabil' | 'pruefungsreif'
+export type Level = 'nicht_begonnen' | 'aufbau' | 'basis' | 'stabil' | 'pruefungsreif'
 export type Category = 'grundlage' | 'unterordnung' | 'verkehr' | 'pruefung' | 'sport'
+export type Sport = 'bh' | 'ro'
+export type ROClass = 'beginner' | 'klasse1' | 'klasse2' | 'klasse3'
 
 export interface LevelCriteria {
+  nicht_begonnen: string
   aufbau: string
   basis: string
   stabil: string
@@ -41,8 +44,31 @@ export interface TrainingEntry {
 export interface TrainingSession {
   id: string
   date: string
+  sport?: Sport
   entries: TrainingEntry[]
+  roEntries?: ROSessionEntry[]
   generalNote: string
+}
+
+export interface ROSign {
+  id: string
+  number: string
+  name: string
+  hauptbestandteil: string
+  classes: ROClass[]
+}
+
+export interface ROSignStatus {
+  signId: string
+  level: Level
+  updatedAt: string
+  lastPracticedAt?: string
+  leitnerBox?: number
+}
+
+export interface ROSessionEntry {
+  signId: string
+  note?: string
 }
 
 export interface AppState {
@@ -51,4 +77,5 @@ export interface AppState {
   customExercises: Exercise[]
   exerciseOverrides: Record<string, ExerciseOverride>
   hiddenExerciseIds: string[]
+  roSignStatuses: ROSignStatus[]
 }

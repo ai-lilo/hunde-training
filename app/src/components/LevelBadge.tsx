@@ -1,6 +1,7 @@
 import type { Level } from '../data/types'
 
 const CONFIG: Record<Level, { label: string; color: string; dot: string }> = {
+  nicht_begonnen: { label: 'Nicht begonnen', color: 'bg-stone-100 text-stone-400',     dot: 'bg-stone-300' },
   aufbau:       { label: 'Aufbau',        color: 'bg-red-100 text-red-700',     dot: 'bg-red-500' },
   basis:        { label: 'Basis',         color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500' },
   stabil:       { label: 'Stabil',        color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
