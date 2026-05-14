@@ -58,11 +58,17 @@
 
 ## Abgedeckte Prüfbereiche
 
+### Git-Repository
+- [x] Sensitive Dateien im Git-Index (`git ls-files`) — **Keine Funde**
+- [x] Secrets in Git-History (`git log --all -p -- *.env*`) — **Keine Funde**
+- [x] `.gitignore`-Abdeckung für `.env*` — **Abgedeckt** via `*.local`-Regel in beiden `.gitignore`-Dateien
+- [x] Staged Changes auf Secrets geprüft — **Keine Funde**
+
+### Code
 - [x] XSS / `dangerouslySetInnerHTML` / `eval()` — **Keine Funde**
 - [x] SQL-Injection (Supabase Query Builder) — **Keine Funde**, alle Queries parameterisiert
 - [x] Prompt Injection — Kein aktiver KI-API-Zugriff, Design-Hinweis dokumentiert
 - [x] Sensitive Data / Hardcodierte Secrets — **Keine Funde**
-- [x] `.env.local` in `.gitignore` — **Abgedeckt** via `*.local`-Regel
 - [x] Authentication / Open Redirects — `redirectTo` aus `window.location.origin` (sicher)
 - [x] Auth-Fehler aus URL-Parametern — **FIXED** (Längenbegrenzung)
 - [x] Security Headers (CSP) — **FIXED** (Meta-Tag)

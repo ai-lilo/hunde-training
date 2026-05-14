@@ -1,12 +1,52 @@
 ---
-description: Scannt den gesamten app/src/ Code auf Sicherheitsrisiken (XSS, SQL-Injection, Prompt-Injection, Auth, CSP) und aktualisiert SECURITY_REPORT.md. Kritische Findings werden sofort gefixt.
+description: Scannt Codebase und Git-Repository auf Sicherheitsrisiken (XSS, SQL-Injection, Prompt-Injection, Auth, CSP, Secrets in History). Aktualisiert SECURITY_REPORT.md. Kritische Findings werden sofort gefixt.
 ---
 
 Führe einen vollständigen Security-Scan des Projekts durch. Gehe systematisch vor:
 
+## 0. Git-Repository-Checks (immer zuerst)
+
+Diese Checks laufen gegen das Git-Repo selbst, nicht nur gegen lokale Dateien.
+
+### 0a. Dateiliste aus Git ableiten
+Verwende `git ls-files` als Grundlage für den Scan — so werden ausschließlich versionierte Dateien geprüft, keine Build-Artefakte oder temporären Dateien:
+```
+git ls-files -- "app/src/**/*.ts" "app/src/**/*.tsx" "*.sql" "*.html" "*.json"
+```
+
+### 0b. Sensitive Dateien im Index prüfen
+Prüfe ob `.env`-Dateien, Schlüssel oder Credentials versehentlich getrackt werden:
+```
+git ls-files | grep -iE '\.(env|pem|key|p12|pfx|secret|credentials)$|\.env\.'
+git ls-files | grep -iE 'secret|password|credential|token|private'
+```
+Jeder Treffer ist ein potenzielles CRITICAL-Finding.
+
+### 0c. Git-History auf Secrets scannen
+Prüfe die gesamte Commit-History auf versehentlich committete Secrets (auch wenn sie inzwischen gelöscht wurden):
+```
+git log --all --oneline --diff-filter=A -- "*.env" "*.env.local" "*.env.production" "*.pem" "*.key"
+git log --all -p --follow -- "*.env*" | grep -iE "^\\+.*(password|secret|token|api_key|VITE_.*=.+)" | head -40
+```
+Wenn Secrets in der History gefunden werden: CRITICAL-Finding, auch wenn die Dateien heute in `.gitignore` stehen.
+
+### 0d. .gitignore-Abdeckung verifizieren
+Stelle sicher, dass alle lokalen Secrets- und Build-Dateien korrekt ignoriert werden:
+```
+git check-ignore -v app/.env.local app/.env.production app/.env
+```
+Prüfe außerdem die `.gitignore`-Einträge auf vollständige Abdeckung aller `.env*`-Varianten.
+
+### 0e. Staged Changes prüfen (vor Commit-Kontext)
+Falls staged Changes vorhanden (`git diff --cached --name-only`), scanne diese explizit:
+```
+git diff --cached -U3 | grep -iE "^\\+.*(password|secret|token|api_key|private_key|supabase_service)" | head -20
+```
+Ein Treffer hier bedeutet: sofort unstagen und nicht committen.
+
 ## 1. Scan-Bereiche
 
-Prüfe alle Dateien in `app/src/**/*.{ts,tsx}`, `app/index.html`, `supabase_setup.sql` und alle `.env*`-Dateien auf folgende Risikokategorien:
+Prüfe alle git-getrackten Dateien (Ergebnis aus Schritt 0a) — also `app/src/**/*.{ts,tsx}`, `app/index.html`, `supabase_setup.sql` und alle `.env*`-Dateien — auf folgende Risikokategorien:
 
 ### XSS (Cross-Site Scripting)
 - Suche nach `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `document.write`, `eval(`, `new Function(`
@@ -84,7 +124,15 @@ Schreibe das Ergebnis in `SECURITY_REPORT.md` im Projekt-Root. Format:
 ---
 
 ## Abgedeckte Prüfbereiche
-- [x] XSS / dangerouslySetInnerHTML
+
+### Git-Repository
+- [x] Sensitive Dateien im Git-Index (`git ls-files` Scan)
+- [x] Secrets in Git-History (`git log --all -p`)
+- [x] .gitignore-Abdeckung für .env* und Secrets
+- [x] Staged Changes auf Secrets geprüft
+
+### Code
+- [x] XSS / `dangerouslySetInnerHTML`
 - [x] SQL-Injection (Supabase Query Builder)
 - [x] Prompt Injection
 - [x] Sensitive Data / Hardcoded Secrets

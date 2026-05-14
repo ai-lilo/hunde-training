@@ -18,8 +18,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -Command \"$report = 'c:\\\\Users\\\\neupe\\\\hunde-training\\\\SECURITY_REPORT.md'; if (!(Test-Path $report)) { Write-Host '[SECURITY] WARNUNG: SECURITY_REPORT.md fehlt. Bitte /security-scan ausfuehren.' } else { $age = (Get-Date) - (Get-Item $report).LastWriteTime; if ($age.Days -gt 14) { Write-Host ('[SECURITY] WARNUNG: Security Report ist ' + $age.Days + ' Tage alt. Bitte /security-scan vor dem Push ausfuehren.') } else { Write-Host ('[SECURITY] Security Report aktuell (' + [int]$age.TotalHours + 'h alt). OK.') } }\"",
-            "timeout": 5000
+            "command": "powershell -ExecutionPolicy Bypass -File \"c:\\Users\\neupe\\hunde-training\\.claude\\security-pre-push.ps1\"",
+            "timeout": 10
           }
         ]
       }
