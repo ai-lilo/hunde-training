@@ -11,9 +11,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Hundetraining – Ari',
+        name: 'Hundetraining',
         short_name: 'Hundetraining',
-        description: 'Trainingsfortschritt & Planung für die BH-Ausbildung',
+        description: 'Trainingsfortschritt & Planung für BH und Rally Obedience',
         theme_color: '#3b2f1e',
         background_color: '#faf7f2',
         display: 'standalone',

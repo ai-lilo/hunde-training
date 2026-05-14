@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react'
-import { useStore } from './store/store'
 import { buildAllExercises } from './data/exercises'
 import { Dashboard } from './screens/Dashboard'
 import { LogSession } from './screens/LogSession'
@@ -9,7 +8,16 @@ import { Tagebuch } from './screens/Tagebuch'
 import { ROFortschritt } from './screens/ROFortschritt'
 import { ROEinheit } from './screens/ROEinheit'
 import { getStatusMap } from './data/progression'
-import type { Exercise, Level, Sport } from './data/types'
+import { useExerciseProgress } from './hooks/useExerciseProgress'
+import { useROSignProgress, useSetROSignLevel } from './hooks/useROSignProgress'
+import { useSessions, useAddBHSession, useAddROSession, useDeleteSession } from './hooks/useSessions'
+import { useCustomExercises, useAddCustomExercise } from './hooks/useCustomExercises'
+import { useExerciseOverrides, useUpdateExerciseOverride } from './hooks/useExerciseOverrides'
+import { useHiddenExercises, useHideExercise } from './hooks/useHiddenExercises'
+import { useUserSports } from './hooks/useUserSports'
+import { useAllSports } from './hooks/useUserSports'
+import type { Dog } from './hooks/useDogs'
+import type { Exercise, Level, ExerciseOverride } from './data/types'
 
 type BHScreen = 'dashboard' | 'fortschritt' | 'empfehlung' | 'einheit' | 'tagebuch'
 type ROScreen = 'ro-fortschritt' | 'ro-einheit' | 'ro-tagebuch'
@@ -35,42 +43,75 @@ const RO_NAV: { id: ROScreen; label: string; icon: string }[] = [
   { id: 'ro-tagebuch',    label: 'Tagebuch',  icon: '📔' },
 ]
 
-export default function App() {
-  const [sport, setSport] = useState<Sport>('bh')
+interface Props {
+  dogId: string
+  dog: Dog
+  userId: string
+}
+
+export default function MainApp({ dogId, dog, userId }: Props) {
   const [bhScreen, setBhScreen] = useState<BHScreen>('dashboard')
   const [roScreen, setRoScreen] = useState<ROScreen>('ro-fortschritt')
   const [recentSave, setRecentSave] = useState<RecentSave[] | null>(null)
 
-  const {
-    state,
-    addSession,
-    addROSession,
-    deleteSession,
-    addCustomExercise,
-    updateExercise,
-    deleteExercise,
-    setROSignLevel,
-  } = useStore()
+  // Daten aus Supabase
+  const { data: exerciseStatuses = [] } = useExerciseProgress(dogId)
+  const { data: roSignStatuses = [] } = useROSignProgress(dogId)
+  const { data: sessions = [] } = useSessions(dogId)
+  const { data: customExercises = [] } = useCustomExercises(dogId, userId)
+  const { data: exerciseOverrides = {} } = useExerciseOverrides(userId)
+  const { data: hiddenExerciseIds = [] } = useHiddenExercises(userId)
+  const { data: userSportSlugs = [] } = useUserSports(userId)
+  const { data: allSports = [] } = useAllSports()
+
+  // Mutationen
+  const setROSignLevel = useSetROSignLevel(dogId, userId)
+  const addBHSession = useAddBHSession(dogId, userId)
+  const addROSession = useAddROSession(dogId, userId)
+  const deleteSession = useDeleteSession(dogId)
+  const addCustomExercise = useAddCustomExercise(dogId, userId)
+  const updateExerciseOverride = useUpdateExerciseOverride(userId)
+  const hideExercise = useHideExercise(userId)
+
+  // Sport-IDs aus der Sports-Tabelle auflösen
+  const bhSportId = allSports.find(s => s.slug === 'bh')?.id ?? ''
+  const roSportId = allSports.find(s => s.slug === 'ro')?.id ?? ''
+
+  // Aktive Sportarten aus User-Selektion (BH und RO als Fallback)
+  const activeSports = userSportSlugs.length > 0 ? userSportSlugs : ['bh', 'ro']
+  const hasBH = activeSports.includes('bh')
+  const hasRO = activeSports.includes('ro')
+
+  // Aktiver Sport-Tab
+  const [sport, setSport] = useState<'bh' | 'ro'>(hasBH ? 'bh' : 'ro')
 
   const allExercises: Exercise[] = useMemo(() =>
-    buildAllExercises(
-      state.customExercises ?? [],
-      state.exerciseOverrides ?? {},
-      state.hiddenExerciseIds ?? []
-    ),
-    [state.customExercises, state.exerciseOverrides, state.hiddenExerciseIds]
+    buildAllExercises(customExercises, exerciseOverrides, hiddenExerciseIds),
+    [customExercises, exerciseOverrides, hiddenExerciseIds]
   )
 
-  // BH LogSession shown full-screen (no nav)
+  const handleUpdateExercise = (id: string, changes: ExerciseOverride) => {
+    updateExerciseOverride.mutate({ exerciseId: id, changes })
+  }
+
+  const handleDeleteExercise = (id: string) => {
+    hideExercise.mutate(id)
+  }
+
+  const handleAddCustomExercise = (fields: { name: string; category: Exercise['category']; description?: string }) => {
+    addCustomExercise.mutate(fields)
+  }
+
+  // BH LogSession full-screen
   if (sport === 'bh' && bhScreen === 'einheit') {
     return (
       <div className="flex flex-col h-full overflow-hidden">
         <LogSession
-          statuses={state.exerciseStatuses}
+          statuses={exerciseStatuses}
           allExercises={allExercises}
-          onAddCustomExercise={addCustomExercise}
+          onAddCustomExercise={handleAddCustomExercise}
           onSave={(entries, note, date) => {
-            const prevMap = getStatusMap(state.exerciseStatuses, allExercises)
+            const prevMap = getStatusMap(exerciseStatuses, allExercises)
             const saveInfo: RecentSave[] = entries.map(e => ({
               exerciseId: e.exerciseId,
               levelBefore: prevMap[e.exerciseId] ?? 'nicht_begonnen',
@@ -78,7 +119,7 @@ export default function App() {
               rating: e.rating,
               note: e.note,
             }))
-            addSession(entries, note, date)
+            addBHSession.mutate({ entries, generalNote: note, date, sportId: bhSportId })
             setRecentSave(saveInfo)
             setBhScreen('dashboard')
           }}
@@ -92,21 +133,41 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Sport tabs */}
+      {/* Sport-Tabs */}
       <div className="flex-shrink-0 bg-white border-b border-stone-100 flex">
-        {(['bh', 'ro'] as Sport[]).map(s => (
-          <button
-            key={s}
-            onClick={() => setSport(s)}
-            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-              sport === s
-                ? 'text-amber-700 border-b-2 border-amber-600'
-                : 'text-stone-400'
-            }`}
-          >
-            {s === 'bh' ? 'Begleithundeprüfung' : 'Rally Obedience'}
-          </button>
-        ))}
+        {/* Hund wechseln */}
+        <button
+          onClick={async () => {
+            localStorage.removeItem('active_dog_id')
+            window.location.reload()
+          }}
+          className="px-3 py-2.5 text-stone-400 text-sm"
+          title="Hund wechseln"
+        >
+          🐕
+        </button>
+        <div className="flex flex-1">
+          {hasBH && (
+            <button
+              onClick={() => setSport('bh')}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                sport === 'bh' ? 'text-amber-700 border-b-2 border-amber-600' : 'text-stone-400'
+              }`}
+            >
+              Begleithundeprüfung
+            </button>
+          )}
+          {hasRO && (
+            <button
+              onClick={() => setSport('ro')}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                sport === 'ro' ? 'text-amber-700 border-b-2 border-amber-600' : 'text-stone-400'
+              }`}
+            >
+              Rally Obedience
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -115,7 +176,8 @@ export default function App() {
           <>
             {bhScreen === 'dashboard' && (
               <Dashboard
-                statuses={state.exerciseStatuses}
+                dog={dog}
+                statuses={exerciseStatuses}
                 allExercises={allExercises}
                 recentSave={recentSave}
                 onDismissRecentSave={() => setRecentSave(null)}
@@ -124,24 +186,24 @@ export default function App() {
             )}
             {bhScreen === 'fortschritt' && (
               <Progress
-                statuses={state.exerciseStatuses}
+                statuses={exerciseStatuses}
                 allExercises={allExercises}
-                sessions={state.sessions}
-                onUpdateExercise={updateExercise}
-                onDeleteExercise={deleteExercise}
+                sessions={sessions.filter(s => s.sport === 'bh' || !s.sport)}
+                onUpdateExercise={handleUpdateExercise}
+                onDeleteExercise={handleDeleteExercise}
               />
             )}
             {bhScreen === 'empfehlung' && (
               <Empfehlung
-                statuses={state.exerciseStatuses}
+                statuses={exerciseStatuses}
                 onLogSession={() => setBhScreen('einheit')}
               />
             )}
             {bhScreen === 'tagebuch' && (
               <Tagebuch
-                sessions={state.sessions.filter(s => s.sport === 'bh' || !s.sport)}
+                sessions={sessions.filter(s => s.sport === 'bh' || !s.sport)}
                 allExercises={allExercises}
-                onDeleteSession={deleteSession}
+                onDeleteSession={id => deleteSession.mutate(id)}
               />
             )}
           </>
@@ -151,17 +213,17 @@ export default function App() {
           <>
             {roScreen === 'ro-fortschritt' && (
               <ROFortschritt
-                roSignStatuses={state.roSignStatuses}
-                sessions={state.sessions.filter(s => s.sport === 'ro')}
-                onSetLevel={setROSignLevel}
+                roSignStatuses={roSignStatuses}
+                sessions={sessions.filter(s => s.sport === 'ro')}
+                onSetLevel={(signId, level) => setROSignLevel.mutate({ signId, level })}
                 onNavigateToEinheit={() => setRoScreen('ro-einheit')}
               />
             )}
             {roScreen === 'ro-einheit' && (
               <ROEinheit
-                roSignStatuses={state.roSignStatuses}
+                roSignStatuses={roSignStatuses}
                 onSave={(signIds, note, feedback, date) => {
-                  addROSession(signIds, note, feedback, date)
+                  addROSession.mutate({ signIds, generalNote: note, feedback, date, sportId: roSportId })
                   setRoScreen('ro-tagebuch')
                 }}
                 onCancel={() => setRoScreen('ro-fortschritt')}
@@ -169,16 +231,16 @@ export default function App() {
             )}
             {roScreen === 'ro-tagebuch' && (
               <Tagebuch
-                sessions={state.sessions.filter(s => s.sport === 'ro')}
+                sessions={sessions.filter(s => s.sport === 'ro')}
                 allExercises={allExercises}
-                onDeleteSession={deleteSession}
+                onDeleteSession={id => deleteSession.mutate(id)}
               />
             )}
           </>
         )}
       </div>
 
-      {/* Bottom nav */}
+      {/* Bottom Nav */}
       <nav className="flex-shrink-0 bg-white border-t border-stone-100 flex items-center">
         {sport === 'bh'
           ? BH_NAV.map(item => (

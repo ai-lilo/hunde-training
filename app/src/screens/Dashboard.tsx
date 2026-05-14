@@ -3,8 +3,10 @@ import type { Exercise, ExerciseStatus } from '../data/types'
 import { getBhProgress, getStatusMap, getSuggestions, levelIndex } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
 import type { RecentSave } from '../App'
+import type { Dog } from '../hooks/useDogs'
 
 interface Props {
+  dog: Dog
   statuses: ExerciseStatus[]
   allExercises: Exercise[]
   recentSave: RecentSave[] | null
@@ -22,7 +24,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 const RATING_EMOJI: Record<1 | 2 | 3, string> = { 1: '😕', 2: '🙂', 3: '😄' }
 
-export function Dashboard({ statuses, allExercises, recentSave, onDismissRecentSave, onNavigate }: Props) {
+export function Dashboard({ dog, statuses, allExercises, recentSave, onDismissRecentSave, onNavigate }: Props) {
   const exerciseMap = useMemo(() => Object.fromEntries(allExercises.map(e => [e.id, e])), [allExercises])
   const { done, total, percent } = getBhProgress(statuses)
   const map = getStatusMap(statuses, allExercises)
@@ -36,8 +38,10 @@ export function Dashboard({ statuses, allExercises, recentSave, onDismissRecentS
       {/* Header */}
       <div className="pt-2">
         <p className="text-sm text-amber-700 font-medium">Hund</p>
-        <h1 className="text-2xl font-bold text-stone-800">Ari</h1>
-        <p className="text-sm text-stone-500">Australian Shepherd · Begleithundeprüfung</p>
+        <h1 className="text-2xl font-bold text-stone-800">{dog.name}</h1>
+        <p className="text-sm text-stone-500">
+          {[dog.breed, 'Begleithundeprüfung'].filter(Boolean).join(' · ')}
+        </p>
       </div>
 
       {/* ── Gerade gespeichert ── */}
