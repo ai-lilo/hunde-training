@@ -81,7 +81,7 @@ export function useStore() {
 
   const addROSession = useCallback((signIds: string[], generalNote: string, feedback: Record<string, 'gut' | 'weiter'>, date?: string) => {
     const now = new Date().toISOString()
-    const roEntries: ROSessionEntry[] = signIds.map(signId => ({ signId }))
+    const roEntries: ROSessionEntry[] = signIds.map(signId => ({ signId, feedback: feedback[signId] }))
     const session: TrainingSession = {
       id: crypto.randomUUID(),
       date: date ?? now,

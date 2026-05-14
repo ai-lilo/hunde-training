@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import type { Level, ROClass, ROSignStatus } from '../data/types'
+import type { Level, ROClass, ROSignStatus, TrainingSession } from '../data/types'
 import { RO_SIGNS } from '../data/ro-signs'
 import { LevelBadge } from '../components/LevelBadge'
+import { ROAuswertung } from '../components/ROAuswertung'
 
 const LEVELS: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif']
 const LEVEL_LABELS: Record<Level, string> = {
@@ -28,11 +29,12 @@ function getClassSigns(cls: ROClass) {
 
 interface Props {
   roSignStatuses: ROSignStatus[]
+  sessions: TrainingSession[]
   onSetLevel: (signId: string, level: Level) => void
   onNavigateToEinheit: () => void
 }
 
-export function ROFortschritt({ roSignStatuses, onSetLevel, onNavigateToEinheit }: Props) {
+export function ROFortschritt({ roSignStatuses, sessions, onSetLevel, onNavigateToEinheit }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [activeClass, setActiveClass] = useState<ROClass>('beginner')
 
@@ -54,6 +56,8 @@ export function ROFortschritt({ roSignStatuses, onSetLevel, onNavigateToEinheit 
         <h1 className="text-2xl font-bold text-stone-800">RO Schilder</h1>
         <p className="text-sm text-stone-500 mt-0.5">{tab.full} · {classSigns.length} Schilder</p>
       </div>
+
+      <ROAuswertung sessions={sessions} roSignStatuses={roSignStatuses} />
 
       {/* Class tabs */}
       <div className="flex bg-stone-100 rounded-xl p-1 gap-1">

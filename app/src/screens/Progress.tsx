@@ -4,6 +4,7 @@ import { EXERCISE_MAP } from '../data/exercises'
 import { getStatusMap, levelIndex } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
 import { ExerciseEditModal } from '../components/ExerciseEditModal'
+import { BHAuswertung } from '../components/BHAuswertung'
 
 interface Props {
   statuses: ExerciseStatus[]
@@ -41,6 +42,8 @@ export function Progress({ statuses, allExercises, sessions, onUpdateExercise, o
           <h1 className="text-2xl font-bold text-stone-800">Fortschritt</h1>
           <p className="text-sm text-stone-500 mt-0.5">Aktueller Stand je Übung</p>
         </div>
+
+        <BHAuswertung sessions={sessions} allExercises={allExercises} />
 
         {categories.map(cat => {
           const exs = allExercises.filter(e => e.category === cat && !e.parentId)

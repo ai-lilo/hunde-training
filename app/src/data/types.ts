@@ -69,6 +69,7 @@ export interface ROSignStatus {
 export interface ROSessionEntry {
   signId: string
   note?: string
+  feedback?: 'gut' | 'weiter'
 }
 
 export interface AppState {

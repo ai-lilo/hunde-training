@@ -152,6 +152,7 @@ export default function App() {
             {roScreen === 'ro-fortschritt' && (
               <ROFortschritt
                 roSignStatuses={state.roSignStatuses}
+                sessions={state.sessions.filter(s => s.sport === 'ro')}
                 onSetLevel={setROSignLevel}
                 onNavigateToEinheit={() => setRoScreen('ro-einheit')}
               />
