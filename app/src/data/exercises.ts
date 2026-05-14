@@ -25,6 +25,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Schwellenwertarbeit',
     category: 'grundlage',
     bh_required: true,
+    isFoundational: true,
     description: 'Ruhiges Verhalten in der Nähe von Reizen (Menschen, Hunde, Fahrzeuge)',
     prerequisites: [],
     criteria: {
@@ -41,6 +42,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Impulskontrolle',
     category: 'grundlage',
     bh_required: true,
+    isFoundational: true,
     description: 'Hund wartet auf Signal, greift nicht selbstständig zu/vor',
     prerequisites: [],
     criteria: {
@@ -57,6 +59,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Frustrationstoleranz',
     category: 'grundlage',
     bh_required: false,
+    isFoundational: true,
     description: 'Hund bleibt ruhig wenn Erwartungen nicht sofort erfüllt werden',
     prerequisites: ['impulskontrolle'],
     criteria: {

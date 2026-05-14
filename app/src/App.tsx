@@ -7,6 +7,8 @@ import { Empfehlung } from './screens/Empfehlung'
 import { Tagebuch } from './screens/Tagebuch'
 import { ROFortschritt } from './screens/ROFortschritt'
 import { ROEinheit } from './screens/ROEinheit'
+import { GrundlagenFortschritt } from './screens/GrundlagenFortschritt'
+import { GrundlagenEinheit } from './screens/GrundlagenEinheit'
 import { getStatusMap } from './data/progression'
 import { useExerciseProgress } from './hooks/useExerciseProgress'
 import { useROSignProgress, useSetROSignLevel } from './hooks/useROSignProgress'
@@ -17,10 +19,11 @@ import { useHiddenExercises, useHideExercise } from './hooks/useHiddenExercises'
 import { useUserSports } from './hooks/useUserSports'
 import { useAllSports } from './hooks/useUserSports'
 import type { Dog } from './hooks/useDogs'
-import type { Exercise, Level, ExerciseOverride } from './data/types'
+import type { Exercise, Level, ExerciseOverride, LevelCriteria } from './data/types'
 
 type BHScreen = 'dashboard' | 'fortschritt' | 'empfehlung' | 'einheit' | 'tagebuch'
 type ROScreen = 'ro-fortschritt' | 'ro-einheit' | 'ro-tagebuch'
+type GLScreen = 'gl-fortschritt' | 'gl-einheit'
 
 export interface RecentSave {
   exerciseId: string
@@ -43,6 +46,11 @@ const RO_NAV: { id: ROScreen; label: string; icon: string }[] = [
   { id: 'ro-tagebuch',    label: 'Tagebuch',  icon: '📔' },
 ]
 
+const GL_NAV: { id: GLScreen; label: string; icon: string }[] = [
+  { id: 'gl-fortschritt', label: 'Fortschritt',    icon: '📈' },
+  { id: 'gl-einheit',     label: 'Schnell-Einheit', icon: '⚡' },
+]
+
 interface Props {
   dogId: string
   dog: Dog
@@ -52,6 +60,7 @@ interface Props {
 export default function MainApp({ dogId, dog, userId }: Props) {
   const [bhScreen, setBhScreen] = useState<BHScreen>('dashboard')
   const [roScreen, setRoScreen] = useState<ROScreen>('ro-fortschritt')
+  const [glScreen, setGlScreen] = useState<GLScreen>('gl-fortschritt')
   const [recentSave, setRecentSave] = useState<RecentSave[] | null>(null)
 
   // Daten aus Supabase
@@ -76,6 +85,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   // Sport-IDs aus der Sports-Tabelle auflösen
   const bhSportId = allSports.find(s => s.slug === 'bh')?.id ?? ''
   const roSportId = allSports.find(s => s.slug === 'ro')?.id ?? ''
+  const glSportId = allSports.find(s => s.slug === 'grundlagen')?.id ?? ''
 
   // Aktive Sportarten aus User-Selektion (BH und RO als Fallback)
   const activeSports = userSportSlugs.length > 0 ? userSportSlugs : ['bh', 'ro']
@@ -83,7 +93,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   const hasRO = activeSports.includes('ro')
 
   // Aktiver Sport-Tab
-  const [sport, setSport] = useState<'bh' | 'ro'>(hasBH ? 'bh' : 'ro')
+  const [sport, setSport] = useState<'bh' | 'ro' | 'grundlagen'>(hasBH ? 'bh' : 'ro')
 
   const allExercises: Exercise[] = useMemo(() =>
     buildAllExercises(customExercises, exerciseOverrides, hiddenExerciseIds),
@@ -98,7 +108,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
     hideExercise.mutate(id)
   }
 
-  const handleAddCustomExercise = (fields: { name: string; category: Exercise['category']; description?: string }) => {
+  const handleAddCustomExercise = (fields: { name: string; category: Exercise['category']; description?: string; criteria?: LevelCriteria }) => {
     addCustomExercise.mutate(fields)
   }
 
@@ -146,21 +156,29 @@ export default function MainApp({ dogId, dog, userId }: Props) {
         >
           🐕
         </button>
-        <div className="flex flex-1">
+        <div className="flex flex-1 overflow-x-auto">
+          <button
+            onClick={() => setSport('grundlagen')}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors whitespace-nowrap px-3 ${
+              sport === 'grundlagen' ? 'text-amber-700 border-b-2 border-amber-600' : 'text-stone-400'
+            }`}
+          >
+            Grundlagen
+          </button>
           {hasBH && (
             <button
               onClick={() => setSport('bh')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors whitespace-nowrap px-3 ${
                 sport === 'bh' ? 'text-amber-700 border-b-2 border-amber-600' : 'text-stone-400'
               }`}
             >
-              Begleithundeprüfung
+              BH
             </button>
           )}
           {hasRO && (
             <button
               onClick={() => setSport('ro')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors whitespace-nowrap px-3 ${
                 sport === 'ro' ? 'text-amber-700 border-b-2 border-amber-600' : 'text-stone-400'
               }`}
             >
@@ -209,6 +227,31 @@ export default function MainApp({ dogId, dog, userId }: Props) {
           </>
         )}
 
+        {sport === 'grundlagen' && (
+          <>
+            {glScreen === 'gl-fortschritt' && (
+              <GrundlagenFortschritt
+                statuses={exerciseStatuses}
+                allExercises={allExercises}
+                dogId={dogId}
+                userId={userId}
+                onAddExercise={handleAddCustomExercise}
+              />
+            )}
+            {glScreen === 'gl-einheit' && (
+              <GrundlagenEinheit
+                statuses={exerciseStatuses}
+                allExercises={allExercises}
+                onSave={(entries, date) => {
+                  addBHSession.mutate({ entries, generalNote: '', date, sportId: glSportId })
+                  setGlScreen('gl-fortschritt')
+                }}
+                onCancel={() => setGlScreen('gl-fortschritt')}
+              />
+            )}
+          </>
+        )}
+
         {sport === 'ro' && (
           <>
             {roScreen === 'ro-fortschritt' && (
@@ -242,31 +285,44 @@ export default function MainApp({ dogId, dog, userId }: Props) {
 
       {/* Bottom Nav */}
       <nav className="flex-shrink-0 bg-white border-t border-stone-100 flex items-center">
-        {sport === 'bh'
-          ? BH_NAV.map(item => (
+        {sport === 'grundlagen'
+          ? GL_NAV.map(item => (
               <button
                 key={item.id}
-                onClick={() => setBhScreen(item.id)}
+                onClick={() => setGlScreen(item.id)}
                 className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors active:scale-95 ${
-                  currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
+                  glScreen === item.id ? 'text-amber-700' : 'text-stone-400'
                 }`}
               >
                 <span className="text-xl leading-none">{item.icon}</span>
                 <span className="text-xs font-medium">{item.label}</span>
               </button>
             ))
-          : RO_NAV.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setRoScreen(item.id)}
-                className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors active:scale-95 ${
-                  currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
-                }`}
-              >
-                <span className="text-xl leading-none">{item.icon}</span>
-                <span className="text-xs font-medium">{item.label}</span>
-              </button>
-            ))
+          : sport === 'bh'
+            ? BH_NAV.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setBhScreen(item.id)}
+                  className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors active:scale-95 ${
+                    currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
+                  }`}
+                >
+                  <span className="text-xl leading-none">{item.icon}</span>
+                  <span className="text-xs font-medium">{item.label}</span>
+                </button>
+              ))
+            : RO_NAV.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setRoScreen(item.id)}
+                  className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors active:scale-95 ${
+                    currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
+                  }`}
+                >
+                  <span className="text-xl leading-none">{item.icon}</span>
+                  <span className="text-xs font-medium">{item.label}</span>
+                </button>
+              ))
         }
       </nav>
     </div>

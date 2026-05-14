@@ -20,7 +20,7 @@ export function Login() {
     })
 
     if (error) {
-      setError('Fehler beim Senden. Bitte versuche es erneut.')
+      setError(error.message)
     } else {
       setSent(true)
     }

@@ -1,16 +1,23 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 export function AuthCallback() {
   const navigate = useNavigate()
-  const { session, loading } = useAuth()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    if (!loading) {
+    // Supabase appends ?code= to the path (before #), not inside the hash fragment.
+    // useSearchParams() in HashRouter only reads within the hash, so we also check window.location.search.
+    const code = searchParams.get('code') ?? new URLSearchParams(window.location.search).get('code')
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code)
+        .then(() => navigate('/', { replace: true }))
+        .catch(() => navigate('/', { replace: true }))
+    } else {
       navigate('/', { replace: true })
     }
-  }, [session, loading, navigate])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4">

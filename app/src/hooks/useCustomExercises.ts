@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import type { Exercise } from '../data/types'
+import type { Exercise, LevelCriteria } from '../data/types'
 import { CUSTOM_CRITERIA } from '../data/exercises'
 
 interface RawCustomExercise {
@@ -8,6 +8,7 @@ interface RawCustomExercise {
   name: string
   category: string
   description: string | null
+  criteria: LevelCriteria | null
 }
 
 function mapToExercise(raw: RawCustomExercise): Exercise {
@@ -18,7 +19,7 @@ function mapToExercise(raw: RawCustomExercise): Exercise {
     description: raw.description ?? '',
     bh_required: false,
     prerequisites: [],
-    criteria: CUSTOM_CRITERIA,
+    criteria: raw.criteria ?? CUSTOM_CRITERIA,
   }
 }
 
@@ -28,7 +29,7 @@ export function useCustomExercises(_dogId: string, userId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('custom_exercises')
-        .select('id, name, category, description')
+        .select('id, name, category, description, criteria')
         .eq('user_id', userId)
         .order('created_at')
       if (error) throw error
@@ -41,10 +42,10 @@ export function useCustomExercises(_dogId: string, userId: string) {
 export function useAddCustomExercise(dogId: string, userId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (fields: { name: string; category: Exercise['category']; description?: string }) => {
+    mutationFn: async (fields: { name: string; category: Exercise['category']; description?: string; criteria?: LevelCriteria }) => {
       const { data, error } = await supabase
         .from('custom_exercises')
-        .insert({ user_id: userId, dog_id: dogId, name: fields.name, category: fields.category, description: fields.description ?? null })
+        .insert({ user_id: userId, dog_id: dogId, name: fields.name, category: fields.category, description: fields.description ?? null, criteria: fields.criteria ?? null })
         .select()
         .single()
       if (error) throw error

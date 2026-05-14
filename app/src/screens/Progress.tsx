@@ -58,6 +58,7 @@ export function Progress({ statuses, allExercises, sessions, onUpdateExercise, o
                   const current = map[ex.id] ?? 'nicht_begonnen'
                   const idx = levelIndex(current)
                   const isCustom = ex.id.startsWith('custom_')
+                  const isFoundational = ex.isFoundational === true
                   const recentSessions = sessions
                     .filter(s => s.entries.some(e => e.exerciseId === ex.id))
                     .slice(0, 3)
@@ -66,9 +67,10 @@ export function Progress({ statuses, allExercises, sessions, onUpdateExercise, o
                     <details key={ex.id} className={`bg-white rounded-xl border group ${isCustom ? 'border-amber-100' : 'border-stone-100'}`}>
                       <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none active:bg-stone-50">
                         <div className="flex flex-col min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-sm font-medium text-stone-800 truncate">{ex.name}</span>
                             {isCustom && <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200 flex-shrink-0">eigene</span>}
+                            {isFoundational && <span className="text-[10px] text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded-full border border-stone-200 flex-shrink-0">Grundlagen</span>}
                           </div>
                           <span className="text-xs text-stone-400 mt-0.5 truncate">{ex.criteria[current]}</span>
                         </div>

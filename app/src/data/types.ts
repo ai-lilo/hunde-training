@@ -1,6 +1,8 @@
 export type Level = 'nicht_begonnen' | 'aufbau' | 'basis' | 'stabil' | 'pruefungsreif'
-export type Category = 'grundlage' | 'unterordnung' | 'verkehr' | 'pruefung' | 'sport'
-export type Sport = 'bh' | 'ro'
+export type Category =
+  | 'grundlage' | 'unterordnung' | 'verkehr' | 'pruefung' | 'sport'
+  | 'gl_mindset' | 'gl_physio' | 'gl_fuss' | 'gl_sitz' | 'gl_platz' | 'gl_steh'
+export type Sport = 'bh' | 'ro' | 'grundlagen'
 export type ROClass = 'beginner' | 'klasse1' | 'klasse2' | 'klasse3'
 
 export interface LevelCriteria {
@@ -20,6 +22,7 @@ export interface Exercise {
   criteria: LevelCriteria
   prerequisites: string[]
   parentId?: string
+  isFoundational?: boolean
 }
 
 export interface ExerciseOverride {
