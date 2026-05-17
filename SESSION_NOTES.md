@@ -1,5 +1,29 @@
 # Session-Notizen — Hundetraining App
 
+## 2026-05-18 — Session-Abschluss (Equipment HSV – Bugfixes & Schrank verschieben)
+
+> Diese Session fand ausschließlich im Equipment_HSV-Projekt statt.
+
+### Was wurde erledigt (Equipment_HSV)
+- **Checklisten-Bug erklärt**: „Neue Checkliste anlegen" funktionierte nicht, weil die DB-Migration `003_template_restore_and_checklist.sql` noch nicht in Supabase ausgeführt wurde — Spalte `is_checklist` fehlte in der Live-DB. Lösung: Migration muss manuell im Supabase SQL Editor ausgeführt werden.
+- **Schrank in anderen Raum verschieben** (`src/pages/Rooms.tsx`):
+  - Neues `CabinetDialog`-Formular mit Raum-Dropdown (nur beim Bearbeiten sichtbar)
+  - Hinweis bei Raumwechsel: „Alle Equipment-Einträge in diesem Schrank werden in den neuen Raum verschoben"
+  - `saveCabinet()` kaskadiert den Raumwechsel: `cabinets.room_id` + alle `equipment.room_id` mit `cabinet_id = id` werden aktualisiert
+
+### Offene TODOs
+- **DB-Migration ausstehend**: `supabase/migrations/003_template_restore_and_checklist.sql` muss noch manuell im Supabase SQL Editor ausgeführt werden. Ohne diese Migration funktionieren weder Checklisten anlegen noch Vorlage-Wiederherstellung.
+
+### Nächster sinnvoller Schritt
+**DB-Migration in Supabase ausführen, dann Checklisten und Vorlage-Restore testen**
+
+Details:
+- Supabase SQL Editor öffnen → Inhalt von `supabase/migrations/003_template_restore_and_checklist.sql` einfügen → Run
+- Danach: Veranstaltung öffnen → Checklisten-Tab → „Neue Checkliste" anlegen und Unterpunkte hinzufügen
+- Danach: Vorlage ersetzen → „Wiederherstellen"-Button testen
+
+---
+
 ## 2026-05-17 — Session-Abschluss (Equipment HSV – Testlauf 3)
 
 > Diese Session fand ausschließlich im Equipment_HSV-Projekt statt. Alle Änderungen wurden commitet und auf GitHub/Vercel deployed.
