@@ -13,7 +13,7 @@ const GL_CATEGORY_LABEL: Record<string, string> = {
   grundlage: 'BH-Grundlagen',
 }
 
-const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif']
+const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil']
 const LEVEL_LABEL: Record<Level, string> = {
   nicht_begonnen: 'Nicht begonnen',
   aufbau: 'Aufbau',

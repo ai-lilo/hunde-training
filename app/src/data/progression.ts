@@ -1,5 +1,4 @@
 import type { Exercise, ExerciseStatus, Level } from './types'
-import { EXERCISES } from './exercises'
 
 const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif']
 
@@ -12,7 +11,7 @@ export function nextLevel(l: Level): Level | null {
   return idx < LEVEL_ORDER.length - 1 ? LEVEL_ORDER[idx + 1] : null
 }
 
-export function getStatusMap(statuses: ExerciseStatus[], exercises: Exercise[] = EXERCISES): Record<string, Level> {
+export function getStatusMap(statuses: ExerciseStatus[], exercises: Exercise[] = []): Record<string, Level> {
   const map: Record<string, Level> = {}
   for (const e of exercises) map[e.id] = 'nicht_begonnen'
   for (const s of statuses) map[s.exerciseId] = s.level
@@ -33,26 +32,24 @@ export interface Suggestion {
   priority: 'kritisch' | 'hoch' | 'mittel'
 }
 
-export function getSuggestions(statuses: ExerciseStatus[]): Suggestion[] {
-  const map = getStatusMap(statuses)
+export function getSuggestions(statuses: ExerciseStatus[], exercises: Exercise[]): Suggestion[] {
+  const map = getStatusMap(statuses, exercises)
   const suggestions: Suggestion[] = []
 
-  for (const exercise of EXERCISES) {
-    if (exercise.parentId) continue // skip sub-exercises
+  for (const exercise of exercises) {
+    if (exercise.parentId) continue
     const current = map[exercise.id]
     const target = nextLevel(current)
-    if (!target) continue // already pruefungsreif
+    if (!target) continue
 
-    // Check prerequisites are met to start working on next level
     if (!prerequisitesMet(exercise, map, 'aufbau')) continue
 
-    const priority = getPriority(exercise, current, map)
-    const reason = buildReason(exercise, current, target, map)
+    const priority = getPriority(exercise, current, map, exercises)
+    const reason = buildReason(exercise, current, target, map, exercises)
 
     suggestions.push({ exercise, currentLevel: current, targetLevel: target, reason, priority })
   }
 
-  // Sort: kritisch first, then hoch, then mittel; within each group by BH-required
   return suggestions.sort((a, b) => {
     const pOrder = { kritisch: 0, hoch: 1, mittel: 2 }
     const pd = pOrder[a.priority] - pOrder[b.priority]
@@ -66,15 +63,14 @@ export function getSuggestions(statuses: ExerciseStatus[]): Suggestion[] {
 function getPriority(
   exercise: Exercise,
   current: Level,
-  map: Record<string, Level>
+  map: Record<string, Level>,
+  exercises: Exercise[]
 ): Suggestion['priority'] {
-  // Schwellenwert blocks everything — always kritisch if not stable
   if (exercise.id === 'schwellenwert' && levelIndex(current) < levelIndex('stabil')) {
     return 'kritisch'
   }
 
-  // Exercises that many others depend on
-  const blocksCount = EXERCISES.filter(e =>
+  const blocksCount = exercises.filter(e =>
     !e.parentId && e.prerequisites.includes(exercise.id) && levelIndex(map[e.id]) < levelIndex('basis')
   ).length
 
@@ -87,9 +83,10 @@ function buildReason(
   exercise: Exercise,
   current: Level,
   target: Level,
-  map: Record<string, Level>
+  map: Record<string, Level>,
+  exercises: Exercise[]
 ): string {
-  const blockedExercises = EXERCISES.filter(e =>
+  const blockedExercises = exercises.filter(e =>
     !e.parentId &&
     e.prerequisites.includes(exercise.id) &&
     levelIndex(map[e.id] ?? 'nicht_begonnen') < levelIndex('basis')
@@ -111,12 +108,12 @@ function buildReason(
   return `Bereit für nächste Stufe. Kriterium für "${target}": ${exercise.criteria[target]}`
 }
 
-export function getBhProgress(statuses: ExerciseStatus[]): { done: number; total: number; percent: number } {
-  const bhExercises = EXERCISES.filter(e => e.bh_required)
-  const map = getStatusMap(statuses)
+export function getBhProgress(statuses: ExerciseStatus[], exercises: Exercise[]): { done: number; total: number; percent: number } {
+  const bhExercises = exercises.filter(e => e.bh_required)
+  const map = getStatusMap(statuses, exercises)
   const done = bhExercises.filter(e => map[e.id] === 'pruefungsreif').length
   const total = bhExercises.length
-  return { done, total, percent: Math.round((done / total) * 100) }
+  return { done, total, percent: total > 0 ? Math.round((done / total) * 100) : 0 }
 }
 
 export { LEVEL_ORDER }

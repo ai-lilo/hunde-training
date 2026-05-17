@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import type { Exercise, ExerciseOverride, ExerciseStatus, Level, TrainingSession } from '../data/types'
-import { EXERCISE_MAP } from '../data/exercises'
 import { getStatusMap, levelIndex } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
 import { ExerciseEditModal } from '../components/ExerciseEditModal'
@@ -122,7 +121,7 @@ export function Progress({ statuses, allExercises, sessions, onUpdateExercise, o
                             <p className="text-xs text-stone-400 mb-1">Voraussetzungen</p>
                             <div className="flex flex-wrap gap-1.5">
                               {ex.prerequisites.map(pid => {
-                                const prereq = allExerciseMap[pid] ?? EXERCISE_MAP[pid]
+                                const prereq = allExerciseMap[pid]
                                 const lvl = map[pid] ?? 'nicht_begonnen'
                                 const met = levelIndex(lvl) >= levelIndex('basis')
                                 return (

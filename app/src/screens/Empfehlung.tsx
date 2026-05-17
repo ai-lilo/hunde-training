@@ -1,10 +1,11 @@
-import type { ExerciseStatus } from '../data/types'
+import type { Exercise, ExerciseStatus } from '../data/types'
 import { getSuggestions } from '../data/progression'
 import type { Suggestion } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
 
 interface Props {
   statuses: ExerciseStatus[]
+  allExercises: Exercise[]
   onLogSession: () => void
 }
 
@@ -20,8 +21,8 @@ const CATEGORY_LABEL: Record<string, string> = {
   verkehr: 'Verkehrsteil',
 }
 
-export function Empfehlung({ statuses, onLogSession }: Props) {
-  const suggestions = getSuggestions(statuses)
+export function Empfehlung({ statuses, allExercises, onLogSession }: Props) {
+  const suggestions = getSuggestions(statuses, allExercises)
   const kritisch = suggestions.filter(s => s.priority === 'kritisch')
   const hoch = suggestions.filter(s => s.priority === 'hoch')
   const mittel = suggestions.filter(s => s.priority === 'mittel')

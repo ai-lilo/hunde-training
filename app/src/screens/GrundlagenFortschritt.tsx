@@ -14,7 +14,7 @@ const GL_CATEGORIES = [
   { key: 'gl_steh'    as const, label: 'Steh' },
 ]
 
-const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif']
+const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil']
 const LEVEL_LABEL: Record<Level, string> = {
   nicht_begonnen: 'Noch nicht begonnen',
   aufbau: 'Aufbau',
@@ -29,10 +29,9 @@ interface AddFormState {
   aufbau: string
   basis: string
   stabil: string
-  pruefungsreif: string
 }
 
-const EMPTY_FORM: AddFormState = { name: '', description: '', aufbau: '', basis: '', stabil: '', pruefungsreif: '' }
+const EMPTY_FORM: AddFormState = { name: '', description: '', aufbau: '', basis: '', stabil: '' }
 
 interface Props {
   statuses: ExerciseStatus[]
@@ -53,13 +52,13 @@ export function GrundlagenFortschritt({ statuses, allExercises, dogId, userId, o
 
   function handleSubmit(categoryKey: string) {
     if (!form.name.trim()) return
-    const hasCriteria = form.aufbau || form.basis || form.stabil || form.pruefungsreif
+    const hasCriteria = form.aufbau || form.basis || form.stabil
     const criteria: LevelCriteria | undefined = hasCriteria ? {
       nicht_begonnen: CUSTOM_CRITERIA.nicht_begonnen,
       aufbau: form.aufbau || CUSTOM_CRITERIA.aufbau,
       basis: form.basis || CUSTOM_CRITERIA.basis,
       stabil: form.stabil || CUSTOM_CRITERIA.stabil,
-      pruefungsreif: form.pruefungsreif || CUSTOM_CRITERIA.pruefungsreif,
+      pruefungsreif: CUSTOM_CRITERIA.pruefungsreif,
     } : undefined
     onAddExercise({
       name: form.name.trim(),
@@ -155,12 +154,12 @@ export function GrundlagenFortschritt({ statuses, allExercises, dogId, userId, o
                         </div>
                         <div className="flex justify-between text-xs text-stone-400">
                           <span>Aufbau</span>
-                          <span>Prüfungsreif</span>
+                          <span>Stabil</span>
                         </div>
                       </div>
 
                       {/* Nächste Stufe */}
-                      {idx < 4 && idx >= 0 && LEVEL_ORDER[idx + 1] && (
+                      {idx < 3 && idx >= 0 && LEVEL_ORDER[idx + 1] && (
                         <div className="bg-amber-50 rounded-lg p-3">
                           <p className="text-xs font-medium text-amber-700 mb-0.5">Nächste Stufe: {LEVEL_LABEL[LEVEL_ORDER[idx + 1]]}</p>
                           <p className="text-xs text-amber-600">{ex.criteria[LEVEL_ORDER[idx + 1]]}</p>
@@ -200,7 +199,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, dogId, userId, o
 
                   <div className="flex flex-col gap-2">
                     <p className="text-xs text-stone-400 font-medium">Level-Kriterien (optional)</p>
-                    {(['aufbau', 'basis', 'stabil', 'pruefungsreif'] as const).map(l => (
+                    {(['aufbau', 'basis', 'stabil'] as const).map(l => (
                       <div key={l} className="flex items-center gap-2">
                         <span className="text-xs text-stone-400 w-20 flex-shrink-0 capitalize">{l}:</span>
                         <input

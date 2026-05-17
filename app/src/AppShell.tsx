@@ -5,6 +5,7 @@ import { useActiveDog } from './hooks/useActiveDog'
 import { useDogs } from './hooks/useDogs'
 import type { Dog } from './hooks/useDogs'
 import { Login } from './screens/Login'
+import { ResetPassword } from './screens/ResetPassword'
 import { Onboarding } from './screens/Onboarding'
 import { DogSelector } from './screens/DogSelector'
 import MainApp from './App'
@@ -23,7 +24,7 @@ const DEV_DOG: Dog = {
 }
 
 export function AppShell() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, isRecovery } = useAuth()
   const [devBypass, setDevBypass] = useState(false)
 
   // Supabase leitet bei Fehler auf Root mit #error=... um (z.B. abgelaufener Magic Link)
@@ -76,6 +77,11 @@ export function AppShell() {
         </button>
       </div>
     )
+  }
+
+  // Passwort-Reset: temporäre Recovery-Session nach Klick auf Reset-Link
+  if (isRecovery) {
+    return <ResetPassword onDone={() => window.location.reload()} />
   }
 
   // Nicht angemeldet → Login (mit Dev-Button auf localhost)

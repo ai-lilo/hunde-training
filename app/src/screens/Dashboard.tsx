@@ -26,9 +26,9 @@ const RATING_EMOJI: Record<1 | 2 | 3, string> = { 1: '😕', 2: '🙂', 3: '😄
 
 export function Dashboard({ dog, statuses, allExercises, recentSave, onDismissRecentSave, onNavigate }: Props) {
   const exerciseMap = useMemo(() => Object.fromEntries(allExercises.map(e => [e.id, e])), [allExercises])
-  const { done, total, percent } = getBhProgress(statuses)
+  const { done, total, percent } = getBhProgress(statuses, allExercises)
   const map = getStatusMap(statuses, allExercises)
-  const topSuggestions = getSuggestions(statuses).slice(0, 2)
+  const topSuggestions = getSuggestions(statuses, allExercises).slice(0, 2)
 
   const categories = ['grundlage', 'unterordnung', 'verkehr', 'pruefung', 'sport'] as const
   const levelUps = recentSave?.filter(s => levelIndex(s.levelAfter) > levelIndex(s.levelBefore)) ?? []

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import { EXERCISES } from '../data/exercises'
+import type { Exercise } from '../data/types'
 
 export function useHiddenExercises(userId: string) {
   return useQuery({
@@ -17,12 +17,11 @@ export function useHiddenExercises(userId: string) {
   })
 }
 
-export function useHideExercise(userId: string) {
+export function useHideExercise(userId: string, exercises: Exercise[]) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (exerciseId: string) => {
-      // Auch Sub-Übungen verstecken
-      const subIds = EXERCISES.filter(e => e.parentId === exerciseId).map(e => e.id)
+      const subIds = exercises.filter(e => e.parentId === exerciseId).map(e => e.id)
       const ids = [exerciseId, ...subIds]
       const rows = ids.map(exercise_ref_id => ({ user_id: userId, exercise_ref_id }))
       const { error } = await supabase.from('hidden_exercises').upsert(rows, { onConflict: 'user_id,exercise_ref_id' })

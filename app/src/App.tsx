@@ -13,11 +13,13 @@ import { getStatusMap } from './data/progression'
 import { useExerciseProgress } from './hooks/useExerciseProgress'
 import { useROSignProgress, useSetROSignLevel } from './hooks/useROSignProgress'
 import { useSessions, useAddBHSession, useAddROSession, useDeleteSession } from './hooks/useSessions'
+import { useBuiltinExercises } from './hooks/useBuiltinExercises'
 import { useCustomExercises, useAddCustomExercise } from './hooks/useCustomExercises'
 import { useExerciseOverrides, useUpdateExerciseOverride } from './hooks/useExerciseOverrides'
 import { useHiddenExercises, useHideExercise } from './hooks/useHiddenExercises'
 import { useUserSports } from './hooks/useUserSports'
 import { useAllSports } from './hooks/useUserSports'
+import { Einstellungen } from './screens/Einstellungen'
 import type { Dog } from './hooks/useDogs'
 import type { Exercise, Level, ExerciseOverride, LevelCriteria } from './data/types'
 
@@ -62,8 +64,10 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   const [roScreen, setRoScreen] = useState<ROScreen>('ro-fortschritt')
   const [glScreen, setGlScreen] = useState<GLScreen>('gl-fortschritt')
   const [recentSave, setRecentSave] = useState<RecentSave[] | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
 
   // Daten aus Supabase
+  const { data: builtinExercises = [], isLoading: builtinLoading } = useBuiltinExercises()
   const { data: exerciseStatuses = [] } = useExerciseProgress(dogId)
   const { data: roSignStatuses = [] } = useROSignProgress(dogId)
   const { data: sessions = [] } = useSessions(dogId)
@@ -73,6 +77,11 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   const { data: userSportSlugs = [] } = useUserSports(userId)
   const { data: allSports = [] } = useAllSports()
 
+  const allExercises: Exercise[] = useMemo(() =>
+    buildAllExercises(builtinExercises, customExercises, exerciseOverrides, hiddenExerciseIds),
+    [builtinExercises, customExercises, exerciseOverrides, hiddenExerciseIds]
+  )
+
   // Mutationen
   const setROSignLevel = useSetROSignLevel(dogId, userId)
   const addBHSession = useAddBHSession(dogId, userId)
@@ -80,7 +89,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   const deleteSession = useDeleteSession(dogId)
   const addCustomExercise = useAddCustomExercise(dogId, userId)
   const updateExerciseOverride = useUpdateExerciseOverride(userId)
-  const hideExercise = useHideExercise(userId)
+  const hideExercise = useHideExercise(userId, allExercises)
 
   // Sport-IDs aus der Sports-Tabelle auflösen
   const bhSportId = allSports.find(s => s.slug === 'bh')?.id ?? ''
@@ -95,10 +104,17 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   // Aktiver Sport-Tab
   const [sport, setSport] = useState<'bh' | 'ro' | 'grundlagen'>(hasBH ? 'bh' : 'ro')
 
-  const allExercises: Exercise[] = useMemo(() =>
-    buildAllExercises(customExercises, exerciseOverrides, hiddenExerciseIds),
-    [customExercises, exerciseOverrides, hiddenExerciseIds]
-  )
+  if (builtinLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (showSettings) {
+    return <Einstellungen userId={userId} onClose={() => setShowSettings(false)} />
+  }
 
   const handleUpdateExercise = (id: string, changes: ExerciseOverride) => {
     updateExerciseOverride.mutate({ exerciseId: id, changes })
@@ -152,7 +168,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
             window.location.reload()
           }}
           className="px-3 py-2.5 text-stone-400 text-sm"
-          title="Hund wechseln"
+          title="Hund wechseln / hinzufügen"
         >
           🐕
         </button>
@@ -186,6 +202,13 @@ export default function MainApp({ dogId, dog, userId }: Props) {
             </button>
           )}
         </div>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="px-3 py-2.5 text-stone-400 text-sm"
+          title="Einstellungen"
+        >
+          ⚙️
+        </button>
       </div>
 
       {/* Content */}
@@ -214,6 +237,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
             {bhScreen === 'empfehlung' && (
               <Empfehlung
                 statuses={exerciseStatuses}
+                allExercises={allExercises}
                 onLogSession={() => setBhScreen('einheit')}
               />
             )}
