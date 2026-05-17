@@ -1,5 +1,46 @@
 # Session-Notizen — Hundetraining App
 
+## 2026-05-17 — Session-Abschluss
+
+### Was wurde erledigt
+- **Auth auf Email + Passwort umgestellt** (war: Magic Link / OTP)
+  - `Login.tsx` komplett neu: Email+Passwort-Formular + "Passwort vergessen?"-Modus
+  - `useAuth.ts` vereinfacht: kein manuelles PKCE-Handling mehr, `isRecovery`-Flag ergänzt
+  - `supabase.ts`: `flowType: 'implicit'` für Password-Reset-Link-Support
+- **Passwort-Reset-Flow** vollständig implementiert:
+  - `ResetPassword.tsx` (neu): Formular zum Setzen eines neuen Passworts nach Reset-Link-Klick
+  - `AppShell.tsx`: `isRecovery`-Check eingefügt, zeigt ResetPassword-Screen wenn Recovery-Session aktiv
+- **Einstellungen-Screen** (`Einstellungen.tsx`, neu):
+  - Sportarten nachträglich auswählen/abwählen (Toggle wie im Onboarding)
+  - Anzeigename ändern
+  - Abmelden-Button
+  - Erreichbar über ⚙️-Icon in der Top-Bar (rechts)
+  - 🐕-Icon Tooltip verbessert zu "Hund wechseln / hinzufügen"
+- **useBuiltinExercises-Hook** (neu): lädt Übungen aus Supabase-Tabelle statt aus statischen Daten
+- **supabase/add_exercises_table.sql**: SQL-Migration für die Übungstabelle (98 Übungen)
+- **Supabase Redirect-URL-Problem diagnostiziert**:
+  - Live-Version (`https://ai-lilo.github.io/hunde-training/`) war nicht in Supabase-Allowlist
+  - Supabase fiel auf Site URL (`http://localhost:3000/`) zurück
+  - Fix: Supabase Dashboard → Authentication → URL Configuration → Site URL und Redirect URLs anpassen
+
+### Offene TODOs
+Keine TODO/FIXME-Kommentare im Code gefunden.
+
+### Ausstehende Konfiguration (vor nächstem Auth-Test)
+- Supabase Dashboard → Authentication → URL Configuration:
+  - **Site URL** setzen auf: `https://ai-lilo.github.io/hunde-training/`
+  - **Redirect URLs** ergänzen: `https://ai-lilo.github.io/hunde-training/**` und `http://localhost:5173/hunde-training/**`
+
+### Nächster sinnvoller Schritt
+**Supabase-Redirect-URLs konfigurieren + Passwort setzen — dann BH-Prüfungs-Checkliste**
+
+Details:
+- Zuerst: Supabase Dashboard konfigurieren (siehe oben), dann "Passwort vergessen?" auf der Live-Version erneut testen — der Reset-Link sollte jetzt auf `https://ai-lilo.github.io/hunde-training/#access_token=...` zeigen und den "Neues Passwort setzen"-Screen anzeigen
+- Danach: BH-Prüfungs-Checkliste implementieren (`BHCheckliste.tsx`) — Aris Trainingsfortschritt gegen BH-Anforderungen mappen (Leinenführigkeit, Freifolge, Sitz aus Bewegung, Platz mit Rückruf)
+- Exercises-Tabelle in Supabase prüfen (war leer nach fehlgeschlagenem SQL-Run) — ggf. `TRUNCATE TABLE exercises;` + SQL erneut ausführen
+
+---
+
 ## 2026-05-14 — Session-Abschluss
 
 ### Was wurde erledigt
