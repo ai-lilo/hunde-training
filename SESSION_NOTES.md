@@ -1,5 +1,31 @@
 # Session-Notizen — Hundetraining App
 
+## 2026-05-17 — Session-Abschluss (Equipment HSV – Testlauf 3)
+
+> Diese Session fand ausschließlich im Equipment_HSV-Projekt statt. Alle Änderungen wurden commitet und auf GitHub/Vercel deployed.
+
+### Was wurde erledigt (Equipment_HSV)
+- **Datumseingabe Deutsch**: `flatpickr` installiert, `TaskForm.tsx` auf deutschen Kalender umgestellt (Format: TT.MM.JJJJ, gespeicherter Wert bleibt ISO), "× Datum entfernen"-Button ergänzt
+- **PDF-Redesign**: `tournamentPdf.ts` komplett überarbeitet — blaues Banner (30,64,175), Tabellenlayout mit Checkbox-Spalte, Equipment in blau-kursiv, Seitenzahl-Footer; analog zur Inventarliste
+- **PDF-Fix**: Emoji 📦 durch saubere Text-Darstellung ersetzt (jsPDF kann keine Emojis rendern), danach `[Eq]`-Präfix auf Wunsch entfernt
+- **"Meine Aufgaben" Tab** in `TournamentDetail.tsx`: neuer Tab zwischen "Aufgaben" und "Notizen", filtert bereits geladene Tasks nach `responsible_user_id === currentUser.id`, farbkodiert (überfällig/dringend/normal), Klick öffnet TaskForm-Modal
+- **UI-Umbenennung**: "Turnier" → "Veranstaltung" in allen sichtbaren Texten (6 Dateien), Code-Variablen und Routen unverändert
+- **Rechteübersicht Admin**: Tabelle in `Admin.tsx` → Benutzer-Tab mit 10 Funktionen × 3 Rollen (Visitor/Member/Admin), ✓ grün / — hellgrau
+- **Testlauf 2 (Vorarbeit aus vorheriger Session bereits deployed)**
+
+### Offene TODOs
+Keine TODO/FIXME-Kommentare im Equipment_HSV-Code gefunden.
+
+### Nächster sinnvoller Schritt (Hundetraining App)
+**Supabase-Redirect-URLs prüfen + BH-Prüfungs-Checkliste beginnen**
+
+Details:
+- Supabase Dashboard: Site URL und Redirect URLs prüfen (war noch ausstehend von letzter Session) — "Passwort vergessen?" auf Live-Version testen
+- Exercises-Tabelle in Supabase prüfen (war nach fehlgeschlagenem SQL-Run evtl. leer) — `TRUNCATE TABLE exercises;` + SQL-Migration erneut ausführen
+- BH-Prüfungs-Checkliste implementieren: Aris aktuellen Trainingsstand gegen BH-Anforderungen mappen (Leinenführigkeit, Freifolge, Sitz aus Bewegung, Platz mit Rückruf)
+
+---
+
 ## 2026-05-17 — Session-Abschluss
 
 ### Was wurde erledigt
