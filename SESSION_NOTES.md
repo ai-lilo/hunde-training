@@ -1,5 +1,29 @@
 # Session-Notizen — Hundetraining App
 
+## 2026-05-18 — Session-Abschluss (Equipment HSV – Aufgaben/Checklisten-Trennung)
+
+> Diese Session fand ausschließlich im Equipment_HSV-Projekt statt.
+
+### Was wurde erledigt (Equipment_HSV)
+- **Bug: Aufgaben und Checklisten getrennt** (`src/components/tournament/TournamentDetail.tsx`):
+  - Checklisten-Kategorien (`is_checklist=true`) erschienen bisher im Aufgaben-Tab (alle Kategorien wurden ungefiltert angezeigt)
+  - Fix: Abgeleitete Variablen `taskCategories`, `taskCategoryIds`, `aufgabenTasks` eingefügt
+  - Aufgaben-Tab filtert jetzt auf `is_checklist=false`, DashboardTiles zählt nur Aufgaben, Drag&Drop arbeitet nur auf Aufgaben-Kategorien
+  - Checklisten-Tab war bereits korrekt und bleibt unverändert
+
+### Offene TODOs
+- **DB-Migration ausstehend** (aus vorheriger Session): `supabase/migrations/003_template_restore_and_checklist.sql` muss noch manuell im Supabase SQL Editor ausgeführt werden — ohne diese Migration fehlt die `is_checklist`-Spalte in der Live-DB und der heutige Fix greift nicht in Produktion.
+
+### Nächster sinnvoller Schritt
+**DB-Migration in Supabase ausführen — dann den Aufgaben/Checklisten-Fix live testen**
+
+Details:
+- Supabase SQL Editor → `supabase/migrations/003_template_restore_and_checklist.sql` ausführen (fügt `is_checklist`-Spalte zu `tournament_categories` hinzu)
+- Danach Verifikation: Veranstaltung öffnen → Checklisten-Tab → Neue Checkliste anlegen → zurück zu Aufgaben-Tab → Checklisten-Kategorie darf NICHT erscheinen
+- Nach erfolgreichem Test: weitere UX-Verbesserungen oder nächstes Feature im Veranstaltungs-Modul
+
+---
+
 ## 2026-05-18 — Session-Abschluss (Equipment HSV – Bugfixes & Schrank verschieben)
 
 > Diese Session fand ausschließlich im Equipment_HSV-Projekt statt.
