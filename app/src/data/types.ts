@@ -23,12 +23,16 @@ export interface Exercise {
   prerequisites: string[]
   parentId?: string
   isFoundational?: boolean
+  photo_url?: string
+  notes?: string
 }
 
 export interface ExerciseOverride {
   name?: string
   description?: string
   prerequisites?: string[]
+  photo_url?: string
+  notes?: string
 }
 
 export interface ExerciseStatus {

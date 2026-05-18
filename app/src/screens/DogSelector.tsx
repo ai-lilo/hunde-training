@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useDogs, useCreateDog } from '../hooks/useDogs'
+import { useDogs, useCreateDog, useDeleteDog } from '../hooks/useDogs'
 import { supabase } from '../lib/supabase'
 
 interface Props {
@@ -9,10 +9,12 @@ interface Props {
 export function DogSelector({ onSelect }: Props) {
   const { data: dogs = [], isLoading } = useDogs()
   const createDog = useCreateDog()
+  const deleteDog = useDeleteDog()
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
   const [newBreed, setNewBreed] = useState('')
   const [adding, setAdding] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const handleAdd = async () => {
     if (!newName.trim()) return
@@ -20,6 +22,11 @@ export function DogSelector({ onSelect }: Props) {
     const dog = await createDog.mutateAsync({ name: newName.trim(), breed: newBreed.trim() || null })
     onSelect(dog.id)
     setAdding(false)
+  }
+
+  const handleDelete = async (dogId: string) => {
+    await deleteDog.mutateAsync(dogId)
+    setConfirmDeleteId(null)
   }
 
   const handleLogout = async () => {
@@ -42,22 +49,64 @@ export function DogSelector({ onSelect }: Props) {
       </div>
 
       <div className="flex flex-col gap-3 flex-1">
-        {dogs.map(dog => (
-          <button
-            key={dog.id}
-            onClick={() => onSelect(dog.id)}
-            className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-stone-100 shadow-sm text-left active:scale-95 transition-transform"
-          >
-            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
-              🐕
+        {dogs.map(dog => {
+          const isConfirming = confirmDeleteId === dog.id
+          const isDeleting = deleteDog.isPending && confirmDeleteId === dog.id
+
+          if (isConfirming) {
+            return (
+              <div
+                key={dog.id}
+                className="flex flex-col gap-3 p-4 bg-red-50 rounded-2xl border border-red-200"
+              >
+                <p className="text-sm font-medium text-red-800">
+                  <span className="font-bold">{dog.name}</span> wirklich löschen? Alle Trainingsdaten werden mitgelöscht.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    disabled={isDeleting}
+                    className="flex-1 py-2 border border-stone-200 text-stone-600 font-medium rounded-xl text-sm bg-white disabled:opacity-50"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    onClick={() => handleDelete(dog.id)}
+                    disabled={isDeleting}
+                    className="flex-1 py-2 bg-red-600 text-white font-medium rounded-xl text-sm disabled:opacity-50"
+                  >
+                    {isDeleting ? 'Wird gelöscht…' : 'Löschen'}
+                  </button>
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <div key={dog.id} className="flex items-center gap-2">
+              <button
+                onClick={() => onSelect(dog.id)}
+                className="flex-1 flex items-center gap-4 p-4 bg-white rounded-2xl border border-stone-100 shadow-sm text-left active:scale-95 transition-transform"
+              >
+                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
+                  🐕
+                </div>
+                <div>
+                  <p className="font-semibold text-stone-800">{dog.name}</p>
+                  {dog.breed && <p className="text-sm text-stone-500">{dog.breed}</p>}
+                </div>
+                <span className="ml-auto text-stone-300">›</span>
+              </button>
+              <button
+                onClick={() => setConfirmDeleteId(dog.id)}
+                className="p-3 text-stone-300 hover:text-red-400 active:text-red-500 transition-colors"
+                aria-label={`${dog.name} löschen`}
+              >
+                🗑️
+              </button>
             </div>
-            <div>
-              <p className="font-semibold text-stone-800">{dog.name}</p>
-              {dog.breed && <p className="text-sm text-stone-500">{dog.breed}</p>}
-            </div>
-            <span className="ml-auto text-stone-300">›</span>
-          </button>
-        ))}
+          )
+        })}
 
         {/* Neuen Hund hinzufügen */}
         {showAdd ? (

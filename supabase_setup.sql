@@ -257,6 +257,29 @@ CREATE POLICY "own" ON public.achievements FOR ALL
     )
   );
 
+-- ── Sports öffentlich lesbar (war bisher ohne RLS) ───────────
+ALTER TABLE public.sports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read" ON public.sports FOR SELECT USING (true);
+
+-- ── exercise_overrides: Foto und Notiz ────────────────────────
+ALTER TABLE public.exercise_overrides ADD COLUMN IF NOT EXISTS photo_url TEXT;
+ALTER TABLE public.exercise_overrides ADD COLUMN IF NOT EXISTS notes     TEXT;
+
+-- ── Supabase Storage: Übungsfotos ────────────────────────────
+INSERT INTO storage.buckets (id, name, public)
+  VALUES ('exercise-photos', 'exercise-photos', true)
+  ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "user_manage_exercise_photos" ON storage.objects FOR ALL
+  USING (
+    bucket_id = 'exercise-photos'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  )
+  WITH CHECK (
+    bucket_id = 'exercise-photos'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
 -- ============================================================
 -- Prüf-Queries (optional ausführen)
 -- ============================================================

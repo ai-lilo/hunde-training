@@ -257,6 +257,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
               <GrundlagenFortschritt
                 statuses={exerciseStatuses}
                 allExercises={allExercises}
+                overrides={exerciseOverrides}
                 dogId={dogId}
                 userId={userId}
                 onAddExercise={handleAddCustomExercise}

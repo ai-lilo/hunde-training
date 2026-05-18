@@ -74,3 +74,14 @@ export function useUpdateDog() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dogs'] }),
   })
 }
+
+export function useDeleteDog() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (dogId: string) => {
+      const { error } = await supabase.from('dogs').delete().eq('id', dogId)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['dogs'] }),
+  })
+}

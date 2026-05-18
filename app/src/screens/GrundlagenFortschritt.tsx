@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import type { Exercise, ExerciseStatus, Level, LevelCriteria } from '../data/types'
+import type { Exercise, ExerciseOverride, ExerciseStatus, Level, LevelCriteria } from '../data/types'
 import { CUSTOM_CRITERIA } from '../data/exercises'
 import { getStatusMap, levelIndex } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
 import { useSetExerciseLevel } from '../hooks/useExerciseProgress'
+import { useUpdateExerciseOverride, useUploadExercisePhoto } from '../hooks/useExerciseOverrides'
 
 const GL_CATEGORIES = [
   { key: 'gl_mindset' as const, label: 'Mindset' },
@@ -36,18 +37,23 @@ const EMPTY_FORM: AddFormState = { name: '', description: '', aufbau: '', basis:
 interface Props {
   statuses: ExerciseStatus[]
   allExercises: Exercise[]
+  overrides: Record<string, ExerciseOverride>
   dogId: string
   userId: string
   onAddExercise: (fields: { name: string; category: Exercise['category']; description?: string; criteria?: LevelCriteria }) => void
 }
 
-export function GrundlagenFortschritt({ statuses, allExercises, dogId, userId, onAddExercise }: Props) {
+export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId, userId, onAddExercise }: Props) {
   const [addingTo, setAddingTo] = useState<string | null>(null)
   const [form, setForm] = useState<AddFormState>(EMPTY_FORM)
+  const [editNotes, setEditNotes] = useState<Record<string, string>>({})
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
+
   const setLevel = useSetExerciseLevel(dogId, userId)
+  const updateOverride = useUpdateExerciseOverride(userId)
+  const uploadPhoto = useUploadExercisePhoto(userId)
 
   const map = getStatusMap(statuses, allExercises)
-
   const foundationalExercises = allExercises.filter(e => e.isFoundational)
 
   function handleSubmit(categoryKey: string) {
@@ -68,6 +74,32 @@ export function GrundlagenFortschritt({ statuses, allExercises, dogId, userId, o
     })
     setAddingTo(null)
     setForm(EMPTY_FORM)
+  }
+
+  function handleNotesSave(ex: Exercise) {
+    const current = editNotes[ex.id]
+    if (current === undefined) return
+    const saved = ex.notes ?? ''
+    if (current === saved) return
+    const ov = overrides[ex.id] ?? {}
+    updateOverride.mutate({
+      exerciseId: ex.id,
+      changes: { ...ov, notes: current || undefined },
+    })
+  }
+
+  async function handlePhotoUpload(ex: Exercise, file: File) {
+    setUploadingId(ex.id)
+    try {
+      const url = await uploadPhoto.mutateAsync({ exerciseId: ex.id, file })
+      const ov = overrides[ex.id] ?? {}
+      await updateOverride.mutateAsync({
+        exerciseId: ex.id,
+        changes: { ...ov, photo_url: url },
+      })
+    } finally {
+      setUploadingId(null)
+    }
   }
 
   return (
@@ -100,6 +132,8 @@ export function GrundlagenFortschritt({ statuses, allExercises, dogId, userId, o
               {allCatExs.map(ex => {
                 const current = map[ex.id] ?? 'nicht_begonnen'
                 const idx = levelIndex(current)
+                const isUploading = uploadingId === ex.id
+                const notesValue = editNotes[ex.id] ?? ex.notes ?? ''
 
                 return (
                   <details key={ex.id} className={`bg-white rounded-xl border group ${ex.isFoundational ? 'border-stone-200' : 'border-amber-100'}`}>
@@ -170,6 +204,50 @@ export function GrundlagenFortschritt({ statuses, allExercises, dogId, userId, o
                       {ex.description && (
                         <p className="text-xs text-stone-500">{ex.description}</p>
                       )}
+
+                      {/* Foto */}
+                      <div className="flex flex-col gap-2">
+                        <p className="text-xs font-medium text-stone-400">Referenzfoto</p>
+                        {ex.photo_url && (
+                          <img
+                            src={ex.photo_url}
+                            alt={`Foto ${ex.name}`}
+                            className="w-full max-h-48 object-cover rounded-lg border border-stone-100"
+                          />
+                        )}
+                        <label className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                          isUploading
+                            ? 'border-stone-100 text-stone-300'
+                            : 'border-stone-200 text-stone-500 active:bg-stone-50'
+                        }`}>
+                          <span>{isUploading ? '⏳' : '📷'}</span>
+                          <span>{isUploading ? 'Wird hochgeladen…' : ex.photo_url ? 'Foto ändern' : 'Foto hinzufügen'}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={isUploading}
+                            onChange={e => {
+                              const file = e.target.files?.[0]
+                              if (file) handlePhotoUpload(ex, file)
+                              e.target.value = ''
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Notizen */}
+                      <div className="flex flex-col gap-1.5">
+                        <p className="text-xs font-medium text-stone-400">Notizen</p>
+                        <textarea
+                          rows={3}
+                          placeholder="Trainingsausrüstung, Tipps, Besonderheiten…"
+                          value={notesValue}
+                          onChange={e => setEditNotes(prev => ({ ...prev, [ex.id]: e.target.value }))}
+                          onBlur={() => handleNotesSave(ex)}
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-stone-200 text-stone-700 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+                        />
+                      </div>
                     </div>
                   </details>
                 )
