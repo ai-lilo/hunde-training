@@ -35,7 +35,12 @@ export function Login() {
     if (password.length < 6) { setError('Mindestens 6 Zeichen erforderlich.'); return }
     setLoading(true)
     setError(null)
-    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password })
+    const redirectTo = window.location.origin + window.location.pathname
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { emailRedirectTo: redirectTo },
+    })
     if (error) {
       setError(error.message)
       setLoading(false)
