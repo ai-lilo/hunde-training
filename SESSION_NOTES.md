@@ -1,5 +1,40 @@
 # Session-Notizen — Hundetraining App
 
+## 2026-05-26 — Session-Abschluss (Equipment HSV – 4 UI-Features + Performance)
+
+> Diese Session fand ausschließlich im Equipment_HSV-Projekt statt.
+
+### Was wurde erledigt (Equipment_HSV)
+
+**4 UI-Features:**
+- **Checklisten-Modal**: Neuer Eintrag öffnet jetzt ein Dialog-Fenster (wie bei "Neue Aufgabe"), statt Inline-Input (`ChecklistTab.tsx`)
+- **Blauer Startbildschirm behoben**: `useAuth.ts` rief `setLoading(false)` nie auf wenn DB-Query fehlschlug — Fix: `.finally(() => setLoading(false))`
+- **Duplikat-Prüfung Mitglieder**: Admin-Bereich → Mitglieder anlegen prüft nun auf identische Namen (case-insensitive), zeigt Fehlermeldung unter dem Input (`Admin.tsx`)
+- **Neues Mitglied direkt im Helfer-Pool anlegen**: Button "Neues Mitglied anlegen" in Veranstaltungen → Helfer → Verfügbare Personen, ohne in den Admin-Bereich zu wechseln (`HelferTab.tsx`, `TournamentDetail.tsx`)
+
+**Performance-Optimierungen:**
+- **`useTournamentDetail.ts`**: 9 CRUD-Funktionen verwenden jetzt Optimistic Updates (lokalen State direkt aktualisieren) statt `await load()` — spart 6 parallele DB-Queries pro Aktion
+- **`EquipmentLinker.tsx`**: Equipment-Liste wird nicht mehr pro Task-Instanz geladen — `allEquipment`-Prop aus Parent (`TournamentDetail.tsx`) übergeben, einmaliger Load
+- **`useTournaments.ts`**: Tasks server-seitig nach Kategorie gefiltert (statt alle Tasks laden), `is_checklist`-Flag wird beim Klonen kopiert, `task_equipment`-Links werden in neue Veranstaltung mitkopiert
+- **`TreeView.tsx`**: Filter-Kette in `useMemo` gewrapped
+- **`EquipmentCard.tsx`**: `loading="lazy"` auf Bilder
+- **`useClubMembers.ts`**: Error-Handling für alle CRUD-Operationen ergänzt
+- **Neue DB-Migration**: `supabase/migrations/20260524_performance_indexes.sql` — 6 Indexes auf häufig gejointe Foreign Keys
+
+### Offene TODOs
+- **DB-Migration ausstehend**: `supabase/migrations/20260524_performance_indexes.sql` muss noch manuell im Supabase SQL Editor ausgeführt werden — Indexes werden erst dann wirksam
+
+### Nächster sinnvoller Schritt
+**DB-Migration für Performance-Indexes in Supabase ausführen, dann die neuen Features live testen**
+
+Details:
+- Supabase SQL Editor → Inhalt von `supabase/migrations/20260524_performance_indexes.sql` einfügen → Run (idempotent, `IF NOT EXISTS`)
+- Live-Test: Veranstaltung öffnen → Checkliste → "Neuer Eintrag" → Modal erscheint; Kategorie umbenennen → kein Ladeindikator
+- Live-Test: Helfer-Tab → "Verfügbare Personen heute" → "Neues Mitglied anlegen" → Duplikat-Check testen
+- Nächstes Feature oder weitere UX-Verbesserungen im Veranstaltungs-Modul
+
+---
+
 ## 2026-05-18 — Session-Abschluss (Equipment HSV – Aufgaben/Checklisten-Trennung)
 
 > Diese Session fand ausschließlich im Equipment_HSV-Projekt statt.
