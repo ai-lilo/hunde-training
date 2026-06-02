@@ -116,6 +116,11 @@ export function AppShell() {
   // Kein Hund ausgewählt oder ausgewählter Hund existiert nicht mehr
   const validDog = dogs.find(d => d.id === dogId)
   if (!validDog) {
+    // Einzigen Hund automatisch auswählen (z.B. nach PWA-Neuinstallation)
+    if (dogs.length === 1) {
+      setDogId(dogs[0].id)
+      return null
+    }
     return <DogSelector onSelect={setDogId} />
   }
 
