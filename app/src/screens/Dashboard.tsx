@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { Exercise, ExerciseStatus, TrainingSession } from '../data/types'
-import { getBhProgress, getStatusMap, getSuggestions, levelIndex } from '../data/progression'
+import { getBhProgress, getStatusMap, levelIndex } from '../data/progression'
 import { CATEGORY_LABEL } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
 import { WochenPlan } from '../components/WochenPlan'
@@ -23,7 +23,6 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
   const exerciseMap = useMemo(() => Object.fromEntries(allExercises.map(e => [e.id, e])), [allExercises])
   const { done, total, percent } = getBhProgress(statuses, allExercises)
   const map = getStatusMap(statuses, allExercises)
-  const topSuggestions = getSuggestions(statuses, allExercises).slice(0, 4)
 
   const categories = ['grundlage', 'unterordnung', 'verkehr', 'pruefung', 'sport'] as const
   const levelUps = recentSave?.filter(s => levelIndex(s.levelAfter) > levelIndex(s.levelBefore)) ?? []
@@ -119,30 +118,6 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
         sessions={sessions}
         onLogSession={() => onNavigate('einheit')}
       />
-
-      {/* Top suggestions */}
-      {topSuggestions.length > 0 && (
-        <div className="bg-teal-50 rounded-xl p-4 border border-teal-100">
-          <p className="text-sm font-semibold text-teal-800 mb-3">Als nächstes üben</p>
-          <div className="flex flex-col gap-2">
-            {topSuggestions.map(s => (
-              <div key={s.exercise.id} className="flex items-start gap-3">
-                <span className={`mt-0.5 text-xs font-bold px-1.5 py-0.5 rounded ${
-                  s.priority === 'kritisch' ? 'bg-red-100 text-red-700' :
-                  s.priority === 'hoch'     ? 'bg-orange-100 text-orange-700' :
-                                              'bg-stone-100 text-stone-600'
-                }`}>
-                  {s.priority === 'kritisch' ? '!' : s.priority === 'hoch' ? '↑' : '→'}
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-stone-800">{s.exercise.name}</p>
-                  <p className="text-xs text-stone-500 mt-0.5">{s.exercise.criteria[s.targetLevel]}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Exercise overview by category */}
       {categories.map(cat => {

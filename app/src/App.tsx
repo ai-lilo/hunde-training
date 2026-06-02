@@ -175,7 +175,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Sport-Tabs */}
-      <div className="flex-shrink-0 bg-white border-b border-stone-100 flex">
+      <div className="flex-shrink-0 bg-white border-b border-stone-100 flex" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <button
           onClick={async () => {
             localStorage.removeItem('active_dog_id')
