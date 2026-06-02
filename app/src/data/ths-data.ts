@@ -90,8 +90,8 @@ export const THS_DISZIPLIN_EXERCISE_ID: Record<'huerdenlauf' | 'slalom' | 'hinde
   hindernislauf: 'ths-d-hindernislauf',
 }
 
-// Nur 4 Stufen für THS-Zeitdisziplinen (kein Aufbau)
-export const THS_DISZIPLIN_LEVELS = ['nicht_begonnen', 'basis', 'stabil', 'pruefungsreif'] as const
+// Alle 5 Stufen für THS-Zeitdisziplinen
+export const THS_DISZIPLIN_LEVELS = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif'] as const
 
 export const DISZIPLIN_LABEL: Record<THSDisziplin, string> = {
   gehorsam:      'Gehorsam',
