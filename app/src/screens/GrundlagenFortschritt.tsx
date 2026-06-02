@@ -182,7 +182,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 pb-28">
+    <div className="flex flex-col gap-6 p-4 pb-6">
       <div className="pt-2">
         <h1 className="text-2xl font-bold text-stone-800">Grundlagen</h1>
         <p className="text-sm text-stone-500 mt-0.5">Fundament für alle Sportarten</p>
@@ -297,10 +297,10 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                       {/* Level-Progression */}
                       <div>
                         <div className="flex gap-1 mb-2">
-                          {LEVEL_ORDER.map((l, i) => (
+                          {LEVEL_ORDER.filter(l => l !== 'nicht_begonnen').map((l, i) => (
                             <div
                               key={l}
-                              className={`flex-1 h-1.5 rounded-full transition-colors ${i <= idx ? 'bg-teal-400' : 'bg-stone-100'}`}
+                              className={`flex-1 h-1.5 rounded-full transition-colors ${i < idx ? 'bg-teal-400' : 'bg-stone-100'}`}
                             />
                           ))}
                         </div>

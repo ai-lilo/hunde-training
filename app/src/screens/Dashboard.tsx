@@ -28,7 +28,7 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
   const levelUps = recentSave?.filter(s => levelIndex(s.levelAfter) > levelIndex(s.levelBefore)) ?? []
 
   return (
-    <div className="flex flex-col gap-5 p-4 pb-28 animate-fadein">
+    <div className="flex flex-col gap-5 p-4 pb-6 animate-fadein">
       {/* Header — persönlich und warm */}
       <div className="pt-3 flex items-center gap-3">
         <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center text-2xl flex-shrink-0">

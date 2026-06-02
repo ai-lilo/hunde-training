@@ -169,7 +169,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   const sportTabs: { id: Sport; label: string }[] = [
     { id: 'grundlagen', label: 'Grundlagen' },
     ...(hasBH ? [{ id: 'bh' as Sport, label: 'BH' }] : []),
-    ...(hasRO ? [{ id: 'ro' as Sport, label: 'Rally OB' }] : []),
+    ...(hasRO ? [{ id: 'ro' as Sport, label: 'RO' }] : []),
   ]
 
   return (
