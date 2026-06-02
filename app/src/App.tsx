@@ -11,6 +11,8 @@ import { Einstellungen } from './screens/Einstellungen'
 const Tagebuch = lazy(() => import('./screens/Tagebuch').then(m => ({ default: m.Tagebuch })))
 const ROFortschritt = lazy(() => import('./screens/ROFortschritt').then(m => ({ default: m.ROFortschritt })))
 const ROEinheit = lazy(() => import('./screens/ROEinheit').then(m => ({ default: m.ROEinheit })))
+const THSFortschritt = lazy(() => import('./screens/THSFortschritt').then(m => ({ default: m.THSFortschritt })))
+const THSEinheit = lazy(() => import('./screens/THSEinheit').then(m => ({ default: m.THSEinheit })))
 
 function ScreenLoader() {
   return (
@@ -29,13 +31,15 @@ import { useExerciseOverrides, useUpdateExerciseOverride } from './hooks/useExer
 import { useHiddenExercises, useHideExercise } from './hooks/useHiddenExercises'
 import { useUserSports, useAllSports } from './hooks/useUserSports'
 import { useCommands } from './hooks/useCommands'
+import { useTHSObstacleProgress } from './hooks/useTHSObstacleProgress'
+import { useTHSTimes } from './hooks/useTHSTimes'
 import type { Dog } from './hooks/useDogs'
-import type { Exercise, Level, ExerciseOverride, LevelCriteria } from './data/types'
+import type { Exercise, Level, ExerciseOverride, LevelCriteria, Sport } from './data/types'
 
 type BHScreen = 'dashboard' | 'fortschritt' | 'tagebuch' | 'einheit'
 type ROScreen = 'ro-fortschritt' | 'ro-einheit' | 'ro-tagebuch'
 type GLScreen = 'gl-fortschritt' | 'gl-einheit'
-type Sport = 'bh' | 'ro' | 'grundlagen'
+type THSScreen = 'ths-fortschritt' | 'ths-einheit' | 'ths-tagebuch'
 
 export interface RecentSave {
   exerciseId: string
@@ -62,6 +66,12 @@ const GL_NAV: { id: GLScreen; label: string; icon: string }[] = [
   { id: 'gl-einheit',     label: 'Schnell-Einheit', icon: '⚡' },
 ]
 
+const THS_NAV: { id: THSScreen; label: string; icon: string }[] = [
+  { id: 'ths-fortschritt', label: 'Fortschritt', icon: '📈' },
+  { id: 'ths-einheit',     label: 'Einheit',     icon: '▶️' },
+  { id: 'ths-tagebuch',    label: 'Tagebuch',    icon: '📔' },
+]
+
 interface Props {
   dogId: string
   dog: Dog
@@ -73,6 +83,7 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
   const [bhScreen, setBhScreen] = useState<BHScreen>('dashboard')
   const [roScreen, setRoScreen] = useState<ROScreen>('ro-fortschritt')
   const [glScreen, setGlScreen] = useState<GLScreen>('gl-fortschritt')
+  const [thsScreen, setThsScreen] = useState<THSScreen>('ths-fortschritt')
   const [recentSave, setRecentSave] = useState<RecentSave[] | null>(null)
   const [showSettings, setShowSettings] = useState(false)
 
@@ -87,6 +98,8 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
   const { data: userSportSlugs = [] } = useUserSports(userId)
   const { data: allSports = [] } = useAllSports()
   const { data: commands = [] } = useCommands(userId)
+  const { data: thsObstacleStatuses = [] } = useTHSObstacleProgress(dogId)
+  const { data: thsTimes = [] } = useTHSTimes(dogId)
 
   const allExercises: Exercise[] = useMemo(() =>
     buildAllExercises(builtinExercises, customExercises, exerciseOverrides, hiddenExerciseIds),
@@ -106,11 +119,13 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
   const bhSportId = allSports.find(s => s.slug === 'bh')?.id ?? ''
   const roSportId = allSports.find(s => s.slug === 'ro')?.id ?? ''
   const glSportId = allSports.find(s => s.slug === 'grundlagen')?.id ?? ''
+  const thsSportId = allSports.find(s => s.slug === 'ths')?.id ?? ''
 
   // Aktive Sportarten aus User-Selektion (BH und RO als Fallback)
   const activeSports = userSportSlugs.length > 0 ? userSportSlugs : ['bh', 'ro']
   const hasBH = activeSports.includes('bh')
   const hasRO = activeSports.includes('ro')
+  const hasTHS = activeSports.includes('ths')
 
   const [sport, setSport] = useState<Sport>(hasBH ? 'bh' : 'ro')
 
@@ -165,12 +180,13 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
     )
   }
 
-  const currentNavId = sport === 'bh' ? bhScreen : sport === 'ro' ? roScreen : glScreen
+  const currentNavId = sport === 'bh' ? bhScreen : sport === 'ro' ? roScreen : sport === 'ths' ? thsScreen : glScreen
 
   const sportTabs: { id: Sport; label: string }[] = [
     { id: 'grundlagen', label: 'Grundlagen' },
     ...(hasBH ? [{ id: 'bh' as Sport, label: 'BH' }] : []),
     ...(hasRO ? [{ id: 'ro' as Sport, label: 'RO' }] : []),
+    ...(hasTHS ? [{ id: 'ths' as Sport, label: 'THS' }] : []),
   ]
 
   return (
@@ -274,6 +290,38 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
           </>
         )}
 
+        {sport === 'ths' && (
+          <Suspense fallback={<ScreenLoader />}>
+            {thsScreen === 'ths-fortschritt' && (
+              <THSFortschritt
+                statuses={exerciseStatuses}
+                obstacleStatuses={thsObstacleStatuses}
+                times={thsTimes}
+                dogId={dogId}
+                userId={userId}
+                onNavigateToEinheit={() => setThsScreen('ths-einheit')}
+              />
+            )}
+            {thsScreen === 'ths-einheit' && (
+              <THSEinheit
+                statuses={exerciseStatuses}
+                dogId={dogId}
+                userId={userId}
+                thsSportId={thsSportId}
+                onSave={() => setThsScreen('ths-fortschritt')}
+                onCancel={() => setThsScreen('ths-fortschritt')}
+              />
+            )}
+            {thsScreen === 'ths-tagebuch' && (
+              <Tagebuch
+                sessions={sessions.filter(s => s.sport === 'ths')}
+                allExercises={allExercises}
+                onDeleteSession={id => deleteSession.mutate(id)}
+              />
+            )}
+          </Suspense>
+        )}
+
         {sport === 'ro' && (
           <>
             <Suspense fallback={<ScreenLoader />}>
@@ -309,7 +357,20 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
 
       {/* Bottom Nav */}
       <nav className="flex-shrink-0 bg-white border-t border-stone-100 flex items-center safe-area-inset-bottom">
-        {sport === 'grundlagen'
+        {sport === 'ths'
+          ? THS_NAV.map(item => (
+              <button
+                key={item.id}
+                onClick={() => setThsScreen(item.id)}
+                className={`flex-1 flex flex-col items-center gap-1 py-3.5 transition-colors active:scale-95 ${
+                  thsScreen === item.id ? 'text-teal-700 border-t-2 border-teal-600' : 'text-stone-400'
+                }`}
+              >
+                <span className="text-xl leading-none">{item.icon}</span>
+                <span className="text-xs font-medium">{item.label}</span>
+              </button>
+            ))
+          : sport === 'grundlagen'
           ? GL_NAV.map(item => (
               <button
                 key={item.id}

@@ -19,13 +19,14 @@ CREATE TABLE IF NOT EXISTS public.sports (
 INSERT INTO public.sports (slug, name, icon, sort_order) VALUES
   ('bh',          'Begleithundeprüfung', '🐕', 1),
   ('ro',          'Rally Obedience',     '🏁', 2),
-  ('agility',     'Agility',             '🔵', 3),
-  ('obedience',   'Obedience',           '🎯', 4),
-  ('mantrailing', 'Mantrailing',         '👃', 5),
-  ('igt',         'IGP',                 '🦺', 6),
-  ('hoopers',     'Hoopers',             '⭕', 7),
-  ('dummy',       'Dummytraining',       '🟡', 8),
-  ('trick',       'Tricktraining',       '✨', 9)
+  ('ths',         'Turnierhundesport',   '🏃', 3),
+  ('agility',     'Agility',             '🔵', 4),
+  ('obedience',   'Obedience',           '🎯', 5),
+  ('mantrailing', 'Mantrailing',         '👃', 6),
+  ('igt',         'IGP',                 '🦺', 7),
+  ('hoopers',     'Hoopers',             '⭕', 8),
+  ('dummy',       'Dummytraining',       '🟡', 9),
+  ('trick',       'Tricktraining',       '✨', 10)
 ON CONFLICT (slug) DO NOTHING;
 
 -- ── Profile ──────────────────────────────────────────────────
@@ -113,6 +114,31 @@ CREATE TABLE IF NOT EXISTS public.exercise_progress (
   UNIQUE (user_id, dog_id, exercise_ref_id)
 );
 
+-- ── THS-Hindernisfortschritt ──────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.ths_obstacle_progress (
+  id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id           UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  dog_id            UUID NOT NULL REFERENCES public.dogs(id) ON DELETE CASCADE,
+  obstacle_ref_id   TEXT NOT NULL,
+  level             TEXT NOT NULL DEFAULT 'nicht_begonnen',
+  last_practiced_at TIMESTAMPTZ,
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, dog_id, obstacle_ref_id)
+);
+
+-- ── THS-Zeiterfassung ────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.ths_times (
+  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id             UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  dog_id              UUID NOT NULL REFERENCES public.dogs(id) ON DELETE CASCADE,
+  discipline          TEXT NOT NULL,
+  klasse              TEXT NOT NULL DEFAULT 'k1',
+  time_seconds        NUMERIC(8,2) NOT NULL,
+  training_session_id UUID REFERENCES public.training_sessions(id) ON DELETE SET NULL,
+  note                TEXT,
+  recorded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ── RO-Schilderfortschritt ────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.ro_sign_progress (
   id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -173,13 +199,15 @@ CREATE TABLE IF NOT EXISTS public.achievements (
 -- Row Level Security
 -- ============================================================
 
-ALTER TABLE public.profiles           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.user_sports        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.dogs               ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.training_sessions  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.session_exercises  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.exercise_progress  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ro_sign_progress   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_sports           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.dogs                  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.training_sessions     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.session_exercises     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exercise_progress     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ro_sign_progress      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ths_obstacle_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ths_times             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.custom_exercises   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exercise_overrides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.hidden_exercises   ENABLE ROW LEVEL SECURITY;
@@ -199,6 +227,12 @@ CREATE POLICY "own" ON public.exercise_progress
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "own" ON public.ro_sign_progress
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "own" ON public.ths_obstacle_progress
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "own" ON public.ths_times
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "own" ON public.custom_exercises

@@ -2,7 +2,7 @@ export type Level = 'nicht_begonnen' | 'aufbau' | 'basis' | 'stabil' | 'pruefung
 export type Category =
   | 'grundlage' | 'unterordnung' | 'verkehr' | 'pruefung' | 'sport'
   | 'gl_mindset' | 'gl_physio' | 'gl_fuss' | 'gl_sitz' | 'gl_platz' | 'gl_steh'
-export type Sport = 'bh' | 'ro' | 'grundlagen'
+export type Sport = 'bh' | 'ro' | 'grundlagen' | 'ths'
 export type ROClass = 'beginner' | 'klasse1' | 'klasse2' | 'klasse3'
 
 export interface LevelCriteria {
@@ -86,6 +86,22 @@ export interface ROSessionEntry {
   signId: string
   note?: string
   feedback?: 'gut' | 'weiter'
+}
+
+export interface THSObstacleStatus {
+  obstacleId: string
+  level: Level
+  updatedAt: string
+  lastPracticedAt?: string
+}
+
+export interface THSTimeRecord {
+  id: string
+  discipline: 'huerdenlauf' | 'slalom' | 'hindernislauf'
+  klasse: 'k1' | 'k2' | 'k3'
+  timeSeconds: number
+  note?: string
+  recordedAt: string
 }
 
 export interface AppState {

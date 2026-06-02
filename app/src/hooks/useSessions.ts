@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import type { TrainingSession, TrainingEntry, ROSessionEntry } from '../data/types'
+import type { TrainingSession, TrainingEntry, ROSessionEntry, Level } from '../data/types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapSession(raw: any): TrainingSession {
@@ -178,6 +178,92 @@ export function useAddROSession(dogId: string, userId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['sessions', dogId] })
       qc.invalidateQueries({ queryKey: ['ro-sign-progress', dogId] })
+    },
+  })
+}
+
+type TrainingEntryLocal = { exerciseId: string; levelAfter: Level }
+
+export function useAddTHSSession(dogId: string, userId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ gehorsamEntries, obstacleIds, obstacleFeedback, generalNote, date, sportId }: {
+      gehorsamEntries: TrainingEntryLocal[]
+      obstacleIds: string[]
+      obstacleFeedback: Record<string, 'gut' | 'weiter'>
+      generalNote: string
+      date?: string
+      sportId: string
+    }) => {
+      const sessionDate = date ?? new Date().toISOString()
+
+      const { data: session, error: sessionError } = await supabase
+        .from('training_sessions')
+        .insert({ dog_id: dogId, sport_id: sportId, session_date: sessionDate, general_note: generalNote })
+        .select()
+        .single()
+      if (sessionError) throw sessionError
+
+      // Gehorsam-Übungen als session_exercises
+      if (gehorsamEntries.length > 0) {
+        const exerciseRows = gehorsamEntries.map(e => ({
+          training_session_id: session.id,
+          exercise_ref_id: e.exerciseId,
+          rating: null,
+          level_after: e.levelAfter,
+          note: null,
+          is_ro: false,
+          feedback: null,
+        }))
+        const { error } = await supabase.from('session_exercises').insert(exerciseRows)
+        if (error) throw error
+
+        const progressRows = gehorsamEntries.map(e => ({
+          user_id: userId,
+          dog_id: dogId,
+          exercise_ref_id: e.exerciseId,
+          level: e.levelAfter,
+          updated_at: new Date().toISOString(),
+        }))
+        const { error: progError } = await supabase
+          .from('exercise_progress')
+          .upsert(progressRows, { onConflict: 'user_id,dog_id,exercise_ref_id' })
+        if (progError) throw progError
+      }
+
+      // Hindernislauf-Einträge als session_exercises (is_ro=false, feedback gesetzt)
+      if (obstacleIds.length > 0) {
+        const obstacleRows = obstacleIds.map(id => ({
+          training_session_id: session.id,
+          exercise_ref_id: id,
+          rating: null,
+          level_after: null,
+          note: null,
+          is_ro: false,
+          feedback: obstacleFeedback[id] ?? null,
+        }))
+        const { error } = await supabase.from('session_exercises').insert(obstacleRows)
+        if (error) throw error
+
+        const now = new Date().toISOString()
+        const progressRows = obstacleIds.map(id => ({
+          user_id: userId,
+          dog_id: dogId,
+          obstacle_ref_id: id,
+          last_practiced_at: sessionDate,
+          updated_at: now,
+        }))
+        await supabase
+          .from('ths_obstacle_progress')
+          .upsert(progressRows, { onConflict: 'user_id,dog_id,obstacle_ref_id' })
+      }
+
+      return session
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sessions', dogId] })
+      qc.invalidateQueries({ queryKey: ['exercise-progress', dogId] })
+      qc.invalidateQueries({ queryKey: ['ths-obstacle-progress', dogId] })
     },
   })
 }
