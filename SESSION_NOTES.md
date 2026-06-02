@@ -1,5 +1,52 @@
 # Session-Notizen — Hundetraining App
 
+## 2026-06-02 — Session-Abschluss (Hundetraining – THS Vierkampf + UX-Fixes)
+
+### Was wurde erledigt
+
+**UX & Layout-Fixes (Folge-Fixes aus vorheriger Session)**
+- Safe-Area-Padding oben für iPhone-Statusleiste (`env(safe-area-inset-top)`) in `App.tsx`
+- Übermäßiger Abstand unten entfernt (`pb-28` → `pb-6`) in Dashboard + GrundlagenFortschritt
+- Sport-Tab "Rally OB" → "RO" (kompakter)
+- Grundlagen-Balken: 5 → 4 Balken (kein Balken bei "nicht begonnen")
+- "Als nächstes üben"-Sektion im BH-Dashboard entfernt (war Duplikat von Wochenplan)
+
+**Neue Sportart: Turnierhundesport (THS) – Vierkampf**
+- `app/src/data/ths-data.ts` — Konstanten: 7 Gehorsam-Übungen (VK1–VK3), 8 Hindernisse (inkl. Oxer), Zeitdisziplin-Infos, `computeTHSKlasse()`-Funktion
+- `app/src/hooks/useTHSObstacleProgress.ts` — Query + Mutation für Hindernisfortschritt (Supabase: `ths_obstacle_progress`)
+- `app/src/hooks/useTHSTimes.ts` — Zeiterfassung (Query, AddTime, DeleteTime, `formatTime`, `parseTimeInput`)
+- `app/src/hooks/useSessions.ts` — `useAddTHSSession()` ergänzt
+- `app/src/screens/THSFortschritt.tsx` — 4 Disziplin-Tabs (Gehorsam, Hürdenlauf, Slalom, Hindernislauf); Zeiterfassung mit Bestzeit; Level-Status (5 Stufen) für Zeitdisziplinen; 8 Hindernisse einzeln mit Level-Picker
+- `app/src/screens/THSEinheit.tsx` — Trainingserfassung: Disziplinen wählen, Gehorsam-Level setzen, Zeiten eingeben, Gut/Üben-Feedback pro Hindernis
+- `app/src/App.tsx` — THS-Tab, THSScreen-State, lazy-load, Bottom-Nav, Hooks; `useEffect` für automatische Sport-Tab-Korrektur (Rules of Hooks Fix)
+- `supabase_setup.sql` — `ths_obstacle_progress`- und `ths_times`-Tabellen + RLS, THS in Sports-Tabelle eingefügt
+
+**Automatische Klassen-Progression VK1 → VK2 → VK3**
+- `computeTHSKlasse()` berechnet aus Fortschrittsdaten automatisch die aktuelle Klasse
+- Startet immer bei VK1; wechselt zu VK2 wenn alle Disziplinen der Klasse prüfungsreif sind, dann zu VK3
+- Klassen-Selector entfernt — stattdessen Fortschrittsanzeige ✓ VK1 → VK2 → VK3
+
+**Sport-Auswahl Fix in Einstellungen**
+- Sportarten werden jetzt sofort beim Antippen gespeichert (kein separater "Speichern"-Klick mehr nötig)
+- `qc.refetchQueries` in `handleSave` stellt sicher dass Tabs nach Einstellungen sofort aktuell sind
+
+### Offene TODOs
+Keine TODO/FIXME-Kommentare im Code gefunden.
+
+### Ausstehende DB-Migration (Supabase manuell ausführen)
+Die neuen THS-Tabellen müssen einmalig im Supabase SQL Editor angelegt werden — SQL liegt in `supabase_setup.sql` unter den THS-Abschnitten. Außerdem muss `'ths'` in die Sports-Tabelle eingefügt werden (INSERT am Anfang der Datei).
+
+### Nächster sinnvoller Schritt
+**THS-Einheit live testen und danach BH-Fortschritt für Ari strukturiert befüllen**
+
+Details:
+- THS in Einstellungen aktivieren (live app) → Supabase-Migration nochmals prüfen ob alle Tabellen angelegt sind
+- Erste THS-Einheit aufzeichnen: Gehorsam VK1 (Leinenführigkeit, Freifolge, Sitz, Platz) mit aktuellem Level, erste Zeiten für Hürdenlauf und Slalom eintragen
+- Parallel: BH-Fortschritt für Ari aktualisieren — Übungen die bereits im Training stabil sind auf "Stabil" setzen, prüfungsreife auf "Prüfungsreif"
+- Mittelfristig: THS-Tagebuch-Anzeige prüfen ob THS-Sessions korrekt angezeigt werden (Tagebuch-Screen filtert auf `sport === 'ths'`)
+
+---
+
 ## 2026-06-02 — Session-Abschluss (Equipment HSV – Anleitungen-Bugfixes)
 
 > Diese Session fand ausschließlich im Equipment_HSV-Projekt statt.
