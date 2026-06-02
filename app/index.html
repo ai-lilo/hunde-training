@@ -3,14 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: blob: https://*.supabase.co; font-src 'self' data:; object-src 'none'; base-uri 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: blob: https://*.supabase.co; media-src 'self' blob: https://*.supabase.co; font-src 'self' data:; object-src 'none'; base-uri 'self';" />
+
+    <!-- PWA / iOS -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Hundetraining" />
-    <meta name="theme-color" content="#faf7f2" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Ari Training" />
+    <meta name="theme-color" content="#92400e" />
+
+    <!-- Icons -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>Hundetraining – Ari</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- iOS Splash Screens (iPhone SE – iPhone 15 Pro Max) -->
+    <link rel="apple-touch-startup-image" href="/apple-touch-icon.png" media="(device-width: 320px)" />
+    <link rel="apple-touch-startup-image" href="/apple-touch-icon.png" media="(device-width: 375px)" />
+    <link rel="apple-touch-startup-image" href="/apple-touch-icon.png" media="(device-width: 390px)" />
+    <link rel="apple-touch-startup-image" href="/apple-touch-icon.png" media="(device-width: 430px)" />
+
+    <title>Ari Training</title>
   </head>
   <body>
     <div id="root"></div>

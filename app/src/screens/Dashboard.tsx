@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
-import type { Exercise, ExerciseStatus } from '../data/types'
+import type { Exercise, ExerciseStatus, TrainingSession } from '../data/types'
 import { getBhProgress, getStatusMap, getSuggestions, levelIndex } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
+import { WochenPlan } from '../components/WochenPlan'
 import type { RecentSave } from '../App'
 import type { Dog } from '../hooks/useDogs'
 
@@ -9,6 +10,7 @@ interface Props {
   dog: Dog
   statuses: ExerciseStatus[]
   allExercises: Exercise[]
+  sessions: TrainingSession[]
   recentSave: RecentSave[] | null
   onDismissRecentSave: () => void
   onNavigate: (screen: string) => void
@@ -24,7 +26,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 const RATING_EMOJI: Record<1 | 2 | 3, string> = { 1: '😕', 2: '🙂', 3: '😄' }
 
-export function Dashboard({ dog, statuses, allExercises, recentSave, onDismissRecentSave, onNavigate }: Props) {
+export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, onDismissRecentSave, onNavigate }: Props) {
   const exerciseMap = useMemo(() => Object.fromEntries(allExercises.map(e => [e.id, e])), [allExercises])
   const { done, total, percent } = getBhProgress(statuses, allExercises)
   const map = getStatusMap(statuses, allExercises)
@@ -34,14 +36,18 @@ export function Dashboard({ dog, statuses, allExercises, recentSave, onDismissRe
   const levelUps = recentSave?.filter(s => levelIndex(s.levelAfter) > levelIndex(s.levelBefore)) ?? []
 
   return (
-    <div className="flex flex-col gap-4 p-4 pb-24">
-      {/* Header */}
-      <div className="pt-2">
-        <p className="text-sm text-amber-700 font-medium">Hund</p>
-        <h1 className="text-2xl font-bold text-stone-800">{dog.name}</h1>
-        <p className="text-sm text-stone-500">
-          {[dog.breed, 'Begleithundeprüfung'].filter(Boolean).join(' · ')}
-        </p>
+    <div className="flex flex-col gap-5 p-4 pb-28 animate-fadein">
+      {/* Header — persönlich und warm */}
+      <div className="pt-3 flex items-center gap-3">
+        <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
+          🐾
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-stone-800 leading-tight">{dog.name}</h1>
+          <p className="text-sm text-stone-500">
+            {[dog.breed, 'Begleithundeprüfung'].filter(Boolean).join(' · ')}
+          </p>
+        </div>
       </div>
 
       {/* ── Gerade gespeichert ── */}
@@ -100,18 +106,26 @@ export function Dashboard({ dog, statuses, allExercises, recentSave, onDismissRe
 
       {/* BH Progress */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-100">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold text-stone-700">BH-Fortschritt</span>
-          <span className="text-sm text-stone-500">{done}/{total} prüfungsreif</span>
+          <span className="text-sm font-semibold text-amber-600">{done}/{total}</span>
         </div>
-        <div className="h-2.5 bg-stone-100 rounded-full overflow-hidden">
+        <div className="h-3 bg-stone-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-amber-500 rounded-full transition-all duration-700"
+            className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-700"
             style={{ width: `${percent}%` }}
           />
         </div>
-        <p className="text-xs text-stone-400 mt-1.5">{percent}% abgeschlossen</p>
+        <p className="text-xs text-stone-400 mt-1.5">{percent}% der Übungen prüfungsreif</p>
       </div>
+
+      {/* Smarte Wochenplanung */}
+      <WochenPlan
+        statuses={statuses}
+        allExercises={allExercises}
+        sessions={sessions}
+        onLogSession={() => onNavigate('einheit')}
+      />
 
       {/* Top suggestions */}
       {topSuggestions.length > 0 && (
@@ -153,7 +167,7 @@ export function Dashboard({ dog, statuses, allExercises, recentSave, onDismissRe
         if (exercises.length === 0) return null
         return (
           <div key={cat} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-100">
-            <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+            <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">
               {CATEGORY_LABEL[cat]}
             </p>
             <div className="flex flex-col gap-2">
@@ -180,12 +194,12 @@ export function Dashboard({ dog, statuses, allExercises, recentSave, onDismissRe
         )
       })}
 
-      {/* Quick log button */}
+      {/* Trainingseinheit starten */}
       <button
         onClick={() => onNavigate('einheit')}
-        className="fixed bottom-20 right-4 w-14 h-14 bg-amber-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl active:scale-95 transition-transform"
+        className="w-full py-3.5 bg-amber-600 text-white text-sm font-semibold rounded-2xl shadow-sm active:scale-95 transition-transform"
       >
-        +
+        + Neue Trainingseinheit
       </button>
     </div>
   )

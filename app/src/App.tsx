@@ -1,14 +1,26 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import { buildAllExercises } from './data/exercises'
 import { Dashboard } from './screens/Dashboard'
 import { LogSession } from './screens/LogSession'
 import { Progress } from './screens/Progress'
 import { Empfehlung } from './screens/Empfehlung'
-import { Tagebuch } from './screens/Tagebuch'
-import { ROFortschritt } from './screens/ROFortschritt'
-import { ROEinheit } from './screens/ROEinheit'
 import { GrundlagenFortschritt } from './screens/GrundlagenFortschritt'
 import { GrundlagenEinheit } from './screens/GrundlagenEinheit'
+import { Einstellungen } from './screens/Einstellungen'
+
+// Lazy-loaded: selten genutzte Screens — reduzieren Initial-Bundle
+const Tagebuch = lazy(() => import('./screens/Tagebuch').then(m => ({ default: m.Tagebuch })))
+const ROFortschritt = lazy(() => import('./screens/ROFortschritt').then(m => ({ default: m.ROFortschritt })))
+const ROEinheit = lazy(() => import('./screens/ROEinheit').then(m => ({ default: m.ROEinheit })))
+const Kommandos = lazy(() => import('./screens/Kommandos').then(m => ({ default: m.Kommandos })))
+
+function ScreenLoader() {
+  return (
+    <div className="flex items-center justify-center h-32">
+      <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
 import { getStatusMap } from './data/progression'
 import { useExerciseProgress } from './hooks/useExerciseProgress'
 import { useROSignProgress, useSetROSignLevel } from './hooks/useROSignProgress'
@@ -17,15 +29,15 @@ import { useBuiltinExercises } from './hooks/useBuiltinExercises'
 import { useCustomExercises, useAddCustomExercise } from './hooks/useCustomExercises'
 import { useExerciseOverrides, useUpdateExerciseOverride } from './hooks/useExerciseOverrides'
 import { useHiddenExercises, useHideExercise } from './hooks/useHiddenExercises'
-import { useUserSports } from './hooks/useUserSports'
-import { useAllSports } from './hooks/useUserSports'
-import { Einstellungen } from './screens/Einstellungen'
+import { useUserSports, useAllSports } from './hooks/useUserSports'
+import { useCommands } from './hooks/useCommands'
 import type { Dog } from './hooks/useDogs'
 import type { Exercise, Level, ExerciseOverride, LevelCriteria } from './data/types'
 
 type BHScreen = 'dashboard' | 'fortschritt' | 'empfehlung' | 'einheit' | 'tagebuch'
 type ROScreen = 'ro-fortschritt' | 'ro-einheit' | 'ro-tagebuch'
 type GLScreen = 'gl-fortschritt' | 'gl-einheit'
+type Sport = 'bh' | 'ro' | 'grundlagen' | 'kommandos'
 
 export interface RecentSave {
   exerciseId: string
@@ -49,7 +61,7 @@ const RO_NAV: { id: ROScreen; label: string; icon: string }[] = [
 ]
 
 const GL_NAV: { id: GLScreen; label: string; icon: string }[] = [
-  { id: 'gl-fortschritt', label: 'Fortschritt',    icon: '📈' },
+  { id: 'gl-fortschritt', label: 'Fortschritt',     icon: '📈' },
   { id: 'gl-einheit',     label: 'Schnell-Einheit', icon: '⚡' },
 ]
 
@@ -76,6 +88,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   const { data: hiddenExerciseIds = [] } = useHiddenExercises(userId)
   const { data: userSportSlugs = [] } = useUserSports(userId)
   const { data: allSports = [] } = useAllSports()
+  const { data: commands = [] } = useCommands(userId)
 
   const allExercises: Exercise[] = useMemo(() =>
     buildAllExercises(builtinExercises, customExercises, exerciseOverrides, hiddenExerciseIds),
@@ -101,8 +114,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   const hasBH = activeSports.includes('bh')
   const hasRO = activeSports.includes('ro')
 
-  // Aktiver Sport-Tab
-  const [sport, setSport] = useState<'bh' | 'ro' | 'grundlagen'>(hasBH ? 'bh' : 'ro')
+  const [sport, setSport] = useState<Sport>(hasBH ? 'bh' : 'ro')
 
   if (builtinLoading) {
     return (
@@ -155,56 +167,47 @@ export default function MainApp({ dogId, dog, userId }: Props) {
     )
   }
 
-  const currentNavId = sport === 'bh' ? bhScreen : roScreen
+  const currentNavId = sport === 'bh' ? bhScreen : sport === 'ro' ? roScreen : glScreen
+
+  const sportTabs: { id: Sport; label: string }[] = [
+    { id: 'grundlagen', label: 'Grundlagen' },
+    ...(hasBH ? [{ id: 'bh' as Sport, label: 'BH' }] : []),
+    ...(hasRO ? [{ id: 'ro' as Sport, label: 'Rally OB' }] : []),
+    { id: 'kommandos', label: '🗣️' },
+  ]
 
   return (
     <div className="flex flex-col h-full">
       {/* Sport-Tabs */}
       <div className="flex-shrink-0 bg-white border-b border-stone-100 flex">
-        {/* Hund wechseln */}
         <button
           onClick={async () => {
             localStorage.removeItem('active_dog_id')
             window.location.reload()
           }}
-          className="px-3 py-2.5 text-stone-400 text-sm"
-          title="Hund wechseln / hinzufügen"
+          className="px-3 py-3 text-stone-400 text-sm flex-shrink-0"
+          title="Hund wechseln"
         >
           🐕
         </button>
         <div className="flex flex-1 overflow-x-auto">
-          <button
-            onClick={() => setSport('grundlagen')}
-            className={`flex-1 py-2.5 text-sm font-semibold transition-colors whitespace-nowrap px-3 ${
-              sport === 'grundlagen' ? 'text-amber-700 border-b-2 border-amber-600' : 'text-stone-400'
-            }`}
-          >
-            Grundlagen
-          </button>
-          {hasBH && (
+          {sportTabs.map(tab => (
             <button
-              onClick={() => setSport('bh')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors whitespace-nowrap px-3 ${
-                sport === 'bh' ? 'text-amber-700 border-b-2 border-amber-600' : 'text-stone-400'
+              key={tab.id}
+              onClick={() => setSport(tab.id)}
+              className={`flex-1 py-3 text-sm font-semibold transition-colors whitespace-nowrap px-3 min-w-0 ${
+                sport === tab.id
+                  ? 'text-amber-700 border-b-2 border-amber-600'
+                  : 'text-stone-400'
               }`}
             >
-              BH
+              {tab.label}
             </button>
-          )}
-          {hasRO && (
-            <button
-              onClick={() => setSport('ro')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors whitespace-nowrap px-3 ${
-                sport === 'ro' ? 'text-amber-700 border-b-2 border-amber-600' : 'text-stone-400'
-              }`}
-            >
-              Rally Obedience
-            </button>
-          )}
+          ))}
         </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="px-3 py-2.5 text-stone-400 text-sm"
+          className="px-3 py-3 text-stone-400 text-sm flex-shrink-0"
           title="Einstellungen"
         >
           ⚙️
@@ -220,6 +223,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                 dog={dog}
                 statuses={exerciseStatuses}
                 allExercises={allExercises}
+                sessions={sessions.filter(s => s.sport === 'bh' || !s.sport)}
                 recentSave={recentSave}
                 onDismissRecentSave={() => setRecentSave(null)}
                 onNavigate={s => setBhScreen(s as BHScreen)}
@@ -230,6 +234,9 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                 statuses={exerciseStatuses}
                 allExercises={allExercises}
                 sessions={sessions.filter(s => s.sport === 'bh' || !s.sport)}
+                dogId={dogId}
+                userId={userId}
+                allCommands={commands}
                 onUpdateExercise={handleUpdateExercise}
                 onDeleteExercise={handleDeleteExercise}
               />
@@ -242,11 +249,13 @@ export default function MainApp({ dogId, dog, userId }: Props) {
               />
             )}
             {bhScreen === 'tagebuch' && (
-              <Tagebuch
-                sessions={sessions.filter(s => s.sport === 'bh' || !s.sport)}
-                allExercises={allExercises}
-                onDeleteSession={id => deleteSession.mutate(id)}
-              />
+              <Suspense fallback={<ScreenLoader />}>
+                <Tagebuch
+                  sessions={sessions.filter(s => s.sport === 'bh' || !s.sport)}
+                  allExercises={allExercises}
+                  onDeleteSession={id => deleteSession.mutate(id)}
+                />
+              </Suspense>
             )}
           </>
         )}
@@ -260,6 +269,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                 overrides={exerciseOverrides}
                 dogId={dogId}
                 userId={userId}
+                allCommands={commands}
                 onAddExercise={handleAddCustomExercise}
               />
             )}
@@ -279,43 +289,51 @@ export default function MainApp({ dogId, dog, userId }: Props) {
 
         {sport === 'ro' && (
           <>
-            {roScreen === 'ro-fortschritt' && (
-              <ROFortschritt
-                roSignStatuses={roSignStatuses}
-                sessions={sessions.filter(s => s.sport === 'ro')}
-                onSetLevel={(signId, level) => setROSignLevel.mutate({ signId, level })}
-                onNavigateToEinheit={() => setRoScreen('ro-einheit')}
-              />
-            )}
-            {roScreen === 'ro-einheit' && (
-              <ROEinheit
-                roSignStatuses={roSignStatuses}
-                onSave={(signIds, note, feedback, date) => {
-                  addROSession.mutate({ signIds, generalNote: note, feedback, date, sportId: roSportId })
-                  setRoScreen('ro-tagebuch')
-                }}
-                onCancel={() => setRoScreen('ro-fortschritt')}
-              />
-            )}
-            {roScreen === 'ro-tagebuch' && (
-              <Tagebuch
-                sessions={sessions.filter(s => s.sport === 'ro')}
-                allExercises={allExercises}
-                onDeleteSession={id => deleteSession.mutate(id)}
-              />
-            )}
+            <Suspense fallback={<ScreenLoader />}>
+              {roScreen === 'ro-fortschritt' && (
+                <ROFortschritt
+                  roSignStatuses={roSignStatuses}
+                  sessions={sessions.filter(s => s.sport === 'ro')}
+                  onSetLevel={(signId, level) => setROSignLevel.mutate({ signId, level })}
+                  onNavigateToEinheit={() => setRoScreen('ro-einheit')}
+                />
+              )}
+              {roScreen === 'ro-einheit' && (
+                <ROEinheit
+                  roSignStatuses={roSignStatuses}
+                  onSave={(signIds, note, feedback, date) => {
+                    addROSession.mutate({ signIds, generalNote: note, feedback, date, sportId: roSportId })
+                    setRoScreen('ro-tagebuch')
+                  }}
+                  onCancel={() => setRoScreen('ro-fortschritt')}
+                />
+              )}
+              {roScreen === 'ro-tagebuch' && (
+                <Tagebuch
+                  sessions={sessions.filter(s => s.sport === 'ro')}
+                  allExercises={allExercises}
+                  onDeleteSession={id => deleteSession.mutate(id)}
+                />
+              )}
+            </Suspense>
           </>
+        )}
+
+        {sport === 'kommandos' && (
+          <Suspense fallback={<ScreenLoader />}>
+            <Kommandos commands={commands} userId={userId} />
+          </Suspense>
         )}
       </div>
 
       {/* Bottom Nav */}
-      <nav className="flex-shrink-0 bg-white border-t border-stone-100 flex items-center">
+      <nav className="flex-shrink-0 bg-white border-t border-stone-100 flex items-center safe-area-inset-bottom">
         {sport === 'grundlagen'
           ? GL_NAV.map(item => (
               <button
                 key={item.id}
                 onClick={() => setGlScreen(item.id)}
-                className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors active:scale-95 ${
+                className={`flex-1 flex flex-col items-center gap-1 py-3.5 transition-colors active:scale-95 ${
                   glScreen === item.id ? 'text-amber-700' : 'text-stone-400'
                 }`}
               >
@@ -328,7 +346,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                 <button
                   key={item.id}
                   onClick={() => setBhScreen(item.id)}
-                  className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors active:scale-95 ${
+                  className={`flex-1 flex flex-col items-center gap-1 py-3.5 transition-colors active:scale-95 ${
                     currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
                   }`}
                 >
@@ -336,18 +354,20 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                   <span className="text-xs font-medium">{item.label}</span>
                 </button>
               ))
-            : RO_NAV.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => setRoScreen(item.id)}
-                  className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors active:scale-95 ${
-                    currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
-                  }`}
-                >
-                  <span className="text-xl leading-none">{item.icon}</span>
-                  <span className="text-xs font-medium">{item.label}</span>
-                </button>
-              ))
+            : sport === 'ro'
+              ? RO_NAV.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => setRoScreen(item.id)}
+                    className={`flex-1 flex flex-col items-center gap-1 py-3.5 transition-colors active:scale-95 ${
+                      currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
+                    }`}
+                  >
+                    <span className="text-xl leading-none">{item.icon}</span>
+                    <span className="text-xs font-medium">{item.label}</span>
+                  </button>
+                ))
+              : null
         }
       </nav>
     </div>

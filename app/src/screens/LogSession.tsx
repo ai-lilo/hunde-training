@@ -3,6 +3,7 @@ import type { Exercise, TrainingEntry, Level, ExerciseStatus } from '../data/typ
 import { getStatusMap, nextLevel } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
 import { CustomExerciseModal } from '../components/CustomExerciseModal'
+import { useWakeLock } from '../hooks/useWakeLock'
 
 interface Props {
   statuses: ExerciseStatus[]
@@ -28,6 +29,9 @@ const LEVEL_LABEL: Record<Level, string> = {
 
 export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCustomExercise }: Props) {
   const map = useMemo(() => getStatusMap(statuses, allExercises), [statuses, allExercises])
+
+  // Bildschirm wach halten während der Trainingseinheit
+  useWakeLock(true)
 
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
   const [selectedIds, setSelectedIds] = useState<string[]>([])

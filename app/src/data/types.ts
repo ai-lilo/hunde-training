@@ -24,6 +24,7 @@ export interface Exercise {
   parentId?: string
   isFoundational?: boolean
   photo_url?: string
+  video_url?: string
   notes?: string
 }
 
@@ -32,7 +33,15 @@ export interface ExerciseOverride {
   description?: string
   prerequisites?: string[]
   photo_url?: string
+  video_url?: string
   notes?: string
+}
+
+export interface Command {
+  id: string
+  name: string
+  description?: string
+  sportContext?: string | null  // 'alltag' | 'bh' | 'ro' | null = alle
 }
 
 export interface ExerciseStatus {

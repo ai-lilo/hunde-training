@@ -1,10 +1,14 @@
-import { useState } from 'react'
-import type { Exercise, ExerciseOverride, ExerciseStatus, Level, LevelCriteria } from '../data/types'
+import { useState, memo } from 'react'
+import type { Exercise, ExerciseOverride, ExerciseStatus, Level, LevelCriteria, Command } from '../data/types'
 import { CUSTOM_CRITERIA } from '../data/exercises'
-import { getStatusMap, levelIndex } from '../data/progression'
+import { getStatusMap, levelIndex, nextLevel } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
 import { useSetExerciseLevel } from '../hooks/useExerciseProgress'
-import { useUpdateExerciseOverride, useUploadExercisePhoto } from '../hooks/useExerciseOverrides'
+import { useUpdateExerciseOverride, useUploadExercisePhoto, useUploadExerciseVideo } from '../hooks/useExerciseOverrides'
+import { useDeleteCustomExercise, useUpdateCustomExercise } from '../hooks/useCustomExercises'
+import { useAllExerciseCommands, useLinkCommand, useUnlinkCommand } from '../hooks/useExerciseCommands'
+import { useAllExerciseLevelHistory } from '../hooks/useExerciseLevelHistory'
+import type { LevelHistoryEntry } from '../hooks/useExerciseLevelHistory'
 
 const GL_CATEGORIES = [
   { key: 'gl_mindset' as const, label: 'Mindset' },
@@ -32,6 +36,14 @@ interface AddFormState {
   stabil: string
 }
 
+interface EditFormState {
+  name: string
+  description: string
+  aufbau: string
+  basis: string
+  stabil: string
+}
+
 const EMPTY_FORM: AddFormState = { name: '', description: '', aufbau: '', basis: '', stabil: '' }
 
 interface Props {
@@ -40,40 +52,124 @@ interface Props {
   overrides: Record<string, ExerciseOverride>
   dogId: string
   userId: string
+  allCommands: Command[]
   onAddExercise: (fields: { name: string; category: Exercise['category']; description?: string; criteria?: LevelCriteria }) => void
 }
 
-export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId, userId, onAddExercise }: Props) {
+// Lernkurve-Timeline — zeigt wann welches Level erreicht wurde
+const LevelTimeline = memo(function LevelTimeline({ history }: { history: LevelHistoryEntry[] }) {
+  if (history.length === 0) return null
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-xs font-medium text-stone-400 mb-0.5">Lernkurve</p>
+      <div className="flex flex-col gap-1.5 pl-1">
+        {history.map((entry, i) => (
+          <div key={i} className="flex items-center gap-2.5">
+            <div className="flex flex-col items-center">
+              <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+              {i < history.length - 1 && <div className="w-px h-3 bg-amber-200" />}
+            </div>
+            <span className="text-xs text-stone-700 font-medium">{LEVEL_LABEL[entry.level]}</span>
+            <span className="text-xs text-stone-400 ml-auto">{new Date(entry.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+})
+
+// Kommando-Chip — ein verknüpftes Kommando mit Entfernen-Button
+function CommandChip({ name, onRemove }: { name: string; onRemove: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1">
+      {name}
+      <button onClick={onRemove} className="text-amber-400 hover:text-amber-600 ml-0.5 leading-none">×</button>
+    </span>
+  )
+}
+
+export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId, userId, allCommands, onAddExercise }: Props) {
   const [addingTo, setAddingTo] = useState<string | null>(null)
-  const [form, setForm] = useState<AddFormState>(EMPTY_FORM)
+  const [addForm, setAddForm] = useState<AddFormState>(EMPTY_FORM)
   const [editNotes, setEditNotes] = useState<Record<string, string>>({})
-  const [uploadingId, setUploadingId] = useState<string | null>(null)
+  const [uploadingPhotoId, setUploadingPhotoId] = useState<string | null>(null)
+  const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<EditFormState>(EMPTY_FORM)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [showResetFor, setShowResetFor] = useState<string | null>(null)
+  const [showCommandPickerFor, setShowCommandPickerFor] = useState<string | null>(null)
+  const [levelUpId, setLevelUpId] = useState<string | null>(null)
 
   const setLevel = useSetExerciseLevel(dogId, userId)
   const updateOverride = useUpdateExerciseOverride(userId)
   const uploadPhoto = useUploadExercisePhoto(userId)
+  const uploadVideo = useUploadExerciseVideo(userId)
+  const deleteExercise = useDeleteCustomExercise(userId)
+  const updateExercise = useUpdateCustomExercise(userId)
+  const linkCommand = useLinkCommand(userId)
+  const unlinkCommand = useUnlinkCommand(userId)
+
+  const { data: exerciseCommandLinks = {} } = useAllExerciseCommands(userId)
+  const { data: levelHistoryAll = {} } = useAllExerciseLevelHistory(dogId)
 
   const map = getStatusMap(statuses, allExercises)
   const foundationalExercises = allExercises.filter(e => e.isFoundational)
 
-  function handleSubmit(categoryKey: string) {
-    if (!form.name.trim()) return
-    const hasCriteria = form.aufbau || form.basis || form.stabil
+  function handleAddSubmit(categoryKey: string) {
+    if (!addForm.name.trim()) return
+    const hasCriteria = addForm.aufbau || addForm.basis || addForm.stabil
     const criteria: LevelCriteria | undefined = hasCriteria ? {
       nicht_begonnen: CUSTOM_CRITERIA.nicht_begonnen,
-      aufbau: form.aufbau || CUSTOM_CRITERIA.aufbau,
-      basis: form.basis || CUSTOM_CRITERIA.basis,
-      stabil: form.stabil || CUSTOM_CRITERIA.stabil,
+      aufbau: addForm.aufbau || CUSTOM_CRITERIA.aufbau,
+      basis: addForm.basis || CUSTOM_CRITERIA.basis,
+      stabil: addForm.stabil || CUSTOM_CRITERIA.stabil,
       pruefungsreif: CUSTOM_CRITERIA.pruefungsreif,
     } : undefined
     onAddExercise({
-      name: form.name.trim(),
+      name: addForm.name.trim(),
       category: categoryKey as Exercise['category'],
-      description: form.description.trim() || undefined,
+      description: addForm.description.trim() || undefined,
       criteria,
     })
     setAddingTo(null)
-    setForm(EMPTY_FORM)
+    setAddForm(EMPTY_FORM)
+  }
+
+  function handleEditStart(ex: Exercise) {
+    const criteria = ex.criteria
+    setEditForm({
+      name: ex.name,
+      description: ex.description ?? '',
+      aufbau: criteria.aufbau !== CUSTOM_CRITERIA.aufbau ? criteria.aufbau : '',
+      basis: criteria.basis !== CUSTOM_CRITERIA.basis ? criteria.basis : '',
+      stabil: criteria.stabil !== CUSTOM_CRITERIA.stabil ? criteria.stabil : '',
+    })
+    setEditingId(ex.id)
+  }
+
+  function handleEditSubmit(ex: Exercise) {
+    if (!editForm.name.trim()) return
+    const hasCriteria = editForm.aufbau || editForm.basis || editForm.stabil
+    const criteria: LevelCriteria | undefined = hasCriteria ? {
+      nicht_begonnen: CUSTOM_CRITERIA.nicht_begonnen,
+      aufbau: editForm.aufbau || CUSTOM_CRITERIA.aufbau,
+      basis: editForm.basis || CUSTOM_CRITERIA.basis,
+      stabil: editForm.stabil || CUSTOM_CRITERIA.stabil,
+      pruefungsreif: CUSTOM_CRITERIA.pruefungsreif,
+    } : undefined
+    updateExercise.mutate({
+      id: ex.id,
+      name: editForm.name.trim(),
+      description: editForm.description.trim() || undefined,
+      criteria,
+    })
+    setEditingId(null)
+  }
+
+  function handleDelete(id: string) {
+    deleteExercise.mutate(id)
+    setConfirmDeleteId(null)
   }
 
   function handleNotesSave(ex: Exercise) {
@@ -89,21 +185,44 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
   }
 
   async function handlePhotoUpload(ex: Exercise, file: File) {
-    setUploadingId(ex.id)
+    setUploadingPhotoId(ex.id)
     try {
       const url = await uploadPhoto.mutateAsync({ exerciseId: ex.id, file })
       const ov = overrides[ex.id] ?? {}
-      await updateOverride.mutateAsync({
-        exerciseId: ex.id,
-        changes: { ...ov, photo_url: url },
-      })
+      await updateOverride.mutateAsync({ exerciseId: ex.id, changes: { ...ov, photo_url: url } })
     } finally {
-      setUploadingId(null)
+      setUploadingPhotoId(null)
     }
   }
 
+  async function handleVideoUpload(ex: Exercise, file: File) {
+    setUploadingVideoId(ex.id)
+    try {
+      const url = await uploadVideo.mutateAsync({ exerciseId: ex.id, file })
+      const ov = overrides[ex.id] ?? {}
+      await updateOverride.mutateAsync({ exerciseId: ex.id, changes: { ...ov, video_url: url } })
+    } finally {
+      setUploadingVideoId(null)
+    }
+  }
+
+  function handleNextLevel(ex: Exercise, current: Level) {
+    const next = nextLevel(current)
+    if (!next) return
+    setLevel.mutate({ exerciseId: ex.id, level: next })
+    setShowResetFor(null)
+    // Level-Up-Animation
+    setLevelUpId(ex.id)
+    setTimeout(() => setLevelUpId(null), 2000)
+  }
+
+  function handleLinkCommand(exerciseId: string, commandId: string) {
+    linkCommand.mutate({ exerciseId, commandId })
+    setShowCommandPickerFor(null)
+  }
+
   return (
-    <div className="flex flex-col gap-4 p-4 pb-24">
+    <div className="flex flex-col gap-6 p-4 pb-28">
       <div className="pt-2">
         <h1 className="text-2xl font-bold text-stone-800">Grundlagen</h1>
         <p className="text-sm text-stone-500 mt-0.5">Fundament für alle Sportarten</p>
@@ -116,87 +235,182 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
 
         return (
           <div key={cat.key}>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">{cat.label}</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">{cat.label}</p>
               {addingTo !== cat.key && (
                 <button
-                  onClick={() => { setAddingTo(cat.key); setForm(EMPTY_FORM) }}
-                  className="text-xs text-amber-600 border border-amber-200 rounded-lg px-2 py-0.5 active:bg-amber-50"
+                  onClick={() => { setAddingTo(cat.key); setAddForm(EMPTY_FORM) }}
+                  className="text-xs text-amber-600 border border-amber-200 rounded-lg px-2.5 py-1 active:bg-amber-50 transition-colors"
                 >
                   + Übung
                 </button>
               )}
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               {allCatExs.map(ex => {
                 const current = map[ex.id] ?? 'nicht_begonnen'
                 const idx = levelIndex(current)
-                const isUploading = uploadingId === ex.id
+                const next = nextLevel(current)
+                const isUploadingPhoto = uploadingPhotoId === ex.id
+                const isUploadingVideo = uploadingVideoId === ex.id
                 const notesValue = editNotes[ex.id] ?? ex.notes ?? ''
+                const isCustom = !ex.isFoundational
+                const links = exerciseCommandLinks[ex.id] ?? []
+                const history = levelHistoryAll[ex.id] ?? []
+                const isLevelUp = levelUpId === ex.id
+
+                if (editingId === ex.id && isCustom) {
+                  return (
+                    <div key={ex.id} className="bg-white rounded-2xl shadow-sm border border-amber-200 p-4 flex flex-col gap-3">
+                      <p className="text-sm font-semibold text-stone-700">Übung bearbeiten</p>
+                      <input
+                        autoFocus
+                        type="text"
+                        value={editForm.name}
+                        onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                        placeholder="Name der Übung *"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                      />
+                      <input
+                        type="text"
+                        value={editForm.description}
+                        onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                        placeholder="Beschreibung (optional)"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                      />
+                      <div className="flex flex-col gap-2">
+                        <p className="text-xs text-stone-400 font-medium">Level-Kriterien (optional)</p>
+                        {(['aufbau', 'basis', 'stabil'] as const).map(l => (
+                          <div key={l} className="flex items-center gap-2">
+                            <span className="text-xs text-stone-400 w-20 flex-shrink-0 capitalize">{l}:</span>
+                            <input
+                              type="text"
+                              placeholder={CUSTOM_CRITERIA[l]}
+                              value={editForm[l]}
+                              onChange={e => setEditForm(f => ({ ...f, [l]: e.target.value }))}
+                              className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => handleEditSubmit(ex)}
+                          disabled={!editForm.name.trim()}
+                          className="flex-1 py-2 bg-amber-600 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
+                        >
+                          Speichern
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="px-4 py-2 text-sm text-stone-500 border border-stone-200 rounded-xl active:bg-stone-50"
+                        >
+                          Abbrechen
+                        </button>
+                      </div>
+                    </div>
+                  )
+                }
 
                 return (
-                  <details key={ex.id} className={`bg-white rounded-xl border group ${ex.isFoundational ? 'border-stone-200' : 'border-amber-100'}`}>
-                    <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none active:bg-stone-50">
+                  <details key={ex.id} className={`bg-white rounded-2xl shadow-sm group ${isLevelUp ? 'ring-2 ring-green-400' : 'border border-stone-100'}`}>
+                    <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer list-none select-none active:bg-stone-50 rounded-2xl">
                       <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-sm font-medium text-stone-800 truncate">{ex.name}</span>
+                          <span className="text-sm font-semibold text-stone-800 truncate">{ex.name}</span>
                           {ex.isFoundational && (
-                            <span className="text-[10px] text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded-full border border-stone-200 flex-shrink-0">BH-Grundlage</span>
+                            <span className="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full flex-shrink-0">BH-Grundlage</span>
                           )}
                         </div>
                         <span className="text-xs text-stone-400 mt-0.5 truncate">{ex.criteria[current]}</span>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                        {isLevelUp && <span className="text-xs text-green-600 font-semibold animate-bounce">🎉</span>}
                         <LevelBadge level={current} />
-                        <span className="text-stone-400 text-xs group-open:rotate-180 transition-transform">▾</span>
+                        <span className="text-stone-300 text-xs group-open:rotate-180 transition-transform">▾</span>
                       </div>
                     </summary>
 
-                    <div className="px-4 pb-4 flex flex-col gap-3 border-t border-stone-50 pt-3">
-                      {/* Level-Selector */}
-                      <div>
-                        <p className="text-xs text-stone-400 mb-1.5">Level setzen</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {LEVEL_ORDER.map(l => (
-                            <button
-                              key={l}
-                              onClick={() => setLevel.mutate({ exerciseId: ex.id, level: l })}
-                              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                                current === l
-                                  ? 'bg-amber-500 text-white border-amber-500'
-                                  : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
-                              }`}
-                            >
-                              {LEVEL_LABEL[l]}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                    <div className="px-4 pb-4 flex flex-col gap-4 border-t border-stone-50 pt-3">
 
-                      {/* Level-Fortschrittsbalken */}
+                      {/* Level-Progression */}
                       <div>
-                        <div className="flex gap-1 mb-1">
+                        <div className="flex gap-1 mb-2">
                           {LEVEL_ORDER.map((l, i) => (
                             <div
                               key={l}
-                              className={`flex-1 h-1.5 rounded-full transition-colors ${
-                                i <= idx ? 'bg-amber-400' : 'bg-stone-100'
-                              }`}
+                              className={`flex-1 h-1.5 rounded-full transition-colors ${i <= idx ? 'bg-amber-400' : 'bg-stone-100'}`}
                             />
                           ))}
                         </div>
-                        <div className="flex justify-between text-xs text-stone-400">
-                          <span>Aufbau</span>
-                          <span>Stabil</span>
-                        </div>
+
+                        {isLevelUp && (
+                          <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-2 text-center">
+                            <p className="text-xs font-semibold text-green-700">🎉 Neue Stufe erreicht: {LEVEL_LABEL[current]}!</p>
+                          </div>
+                        )}
+
+                        {next && !showResetFor && (
+                          <button
+                            onClick={() => handleNextLevel(ex, current)}
+                            className="w-full py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform"
+                          >
+                            Nächste Stufe erreicht → {LEVEL_LABEL[next]}
+                          </button>
+                        )}
+
+                        {!next && (
+                          <div className="text-center py-2">
+                            <span className="text-xs text-green-600 font-semibold">✓ Höchste Stufe erreicht</span>
+                          </div>
+                        )}
+
+                        {!showResetFor && current !== 'nicht_begonnen' && (
+                          <button
+                            onClick={() => setShowResetFor(ex.id)}
+                            className="w-full text-xs text-stone-400 mt-1.5 py-1 active:text-stone-600"
+                          >
+                            Stufe zurücksetzen
+                          </button>
+                        )}
+
+                        {showResetFor === ex.id && (
+                          <div className="flex flex-col gap-1.5 mt-1">
+                            <p className="text-xs text-stone-400 text-center mb-1">Level manuell setzen</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {LEVEL_ORDER.map(l => (
+                                <button
+                                  key={l}
+                                  onClick={() => {
+                                    setLevel.mutate({ exerciseId: ex.id, level: l })
+                                    setShowResetFor(null)
+                                  }}
+                                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                                    current === l
+                                      ? 'bg-amber-500 text-white border-amber-500'
+                                      : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
+                                  }`}
+                                >
+                                  {LEVEL_LABEL[l]}
+                                </button>
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => setShowResetFor(null)}
+                              className="text-xs text-stone-400 text-center mt-1"
+                            >
+                              Abbrechen
+                            </button>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Nächste Stufe */}
-                      {idx < 3 && idx >= 0 && LEVEL_ORDER[idx + 1] && (
-                        <div className="bg-amber-50 rounded-lg p-3">
-                          <p className="text-xs font-medium text-amber-700 mb-0.5">Nächste Stufe: {LEVEL_LABEL[LEVEL_ORDER[idx + 1]]}</p>
-                          <p className="text-xs text-amber-600">{ex.criteria[LEVEL_ORDER[idx + 1]]}</p>
+                      {/* Nächste Stufe Beschreibung */}
+                      {next && !isLevelUp && (
+                        <div className="bg-amber-50 rounded-xl p-3">
+                          <p className="text-xs font-medium text-amber-700 mb-0.5">Ziel: {LEVEL_LABEL[next]}</p>
+                          <p className="text-xs text-amber-600">{ex.criteria[next]}</p>
                         </div>
                       )}
 
@@ -205,31 +419,119 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                         <p className="text-xs text-stone-500">{ex.description}</p>
                       )}
 
-                      {/* Foto */}
+                      {/* Kommandos */}
+                      <div className="flex flex-col gap-2">
+                        <p className="text-xs font-medium text-stone-400">Kommandos</p>
+                        {links.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {links.map(link => {
+                              const cmd = allCommands.find(c => c.id === link.commandId)
+                              if (!cmd) return null
+                              return (
+                                <CommandChip
+                                  key={link.id}
+                                  name={cmd.name}
+                                  onRemove={() => unlinkCommand.mutate({ linkId: link.id, exerciseId: ex.id })}
+                                />
+                              )
+                            })}
+                          </div>
+                        )}
+                        {showCommandPickerFor === ex.id ? (
+                          <div className="flex flex-col gap-1">
+                            {allCommands.filter(c => !links.some(l => l.commandId === c.id)).length === 0 ? (
+                              <p className="text-xs text-stone-400 italic">Alle Kommandos bereits verknüpft</p>
+                            ) : (
+                              <div className="flex flex-col gap-1 max-h-36 overflow-y-auto">
+                                {allCommands
+                                  .filter(c => !links.some(l => l.commandId === c.id))
+                                  .map(cmd => (
+                                    <button
+                                      key={cmd.id}
+                                      onClick={() => handleLinkCommand(ex.id, cmd.id)}
+                                      className="text-left text-xs px-3 py-2 rounded-lg bg-stone-50 border border-stone-100 text-stone-700 active:bg-amber-50 active:border-amber-200"
+                                    >
+                                      <span className="font-medium">{cmd.name}</span>
+                                      {cmd.description && <span className="text-stone-400"> — {cmd.description}</span>}
+                                    </button>
+                                  ))}
+                              </div>
+                            )}
+                            <button
+                              onClick={() => setShowCommandPickerFor(null)}
+                              className="text-xs text-stone-400 mt-0.5"
+                            >
+                              Schließen
+                            </button>
+                          </div>
+                        ) : (
+                          allCommands.length > 0 && (
+                            <button
+                              onClick={() => setShowCommandPickerFor(ex.id)}
+                              className="text-xs text-amber-600 border border-amber-200 rounded-lg px-2.5 py-1.5 self-start active:bg-amber-50"
+                            >
+                              + Kommando verknüpfen
+                            </button>
+                          )
+                        )}
+                        {allCommands.length === 0 && (
+                          <p className="text-xs text-stone-300 italic">Zuerst Kommandos anlegen (Tab „Kommandos")</p>
+                        )}
+                      </div>
+
+                      {/* Medien: Foto */}
                       <div className="flex flex-col gap-2">
                         <p className="text-xs font-medium text-stone-400">Referenzfoto</p>
                         {ex.photo_url && (
                           <img
                             src={ex.photo_url}
                             alt={`Foto ${ex.name}`}
-                            className="w-full max-h-48 object-cover rounded-lg border border-stone-100"
+                            className="w-full max-h-48 object-cover rounded-xl border border-stone-100"
                           />
                         )}
-                        <label className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
-                          isUploading
-                            ? 'border-stone-100 text-stone-300'
-                            : 'border-stone-200 text-stone-500 active:bg-stone-50'
+                        <label className={`flex items-center gap-2 text-xs px-3 py-2 rounded-xl border cursor-pointer transition-colors ${
+                          isUploadingPhoto ? 'border-stone-100 text-stone-300' : 'border-stone-200 text-stone-500 active:bg-stone-50'
                         }`}>
-                          <span>{isUploading ? '⏳' : '📷'}</span>
-                          <span>{isUploading ? 'Wird hochgeladen…' : ex.photo_url ? 'Foto ändern' : 'Foto hinzufügen'}</span>
+                          <span>{isUploadingPhoto ? '⏳' : '📷'}</span>
+                          <span>{isUploadingPhoto ? 'Wird hochgeladen…' : ex.photo_url ? 'Foto ändern' : 'Foto hinzufügen'}</span>
                           <input
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            disabled={isUploading}
+                            disabled={isUploadingPhoto}
                             onChange={e => {
                               const file = e.target.files?.[0]
                               if (file) handlePhotoUpload(ex, file)
+                              e.target.value = ''
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Medien: Video */}
+                      <div className="flex flex-col gap-2">
+                        <p className="text-xs font-medium text-stone-400">Referenzvideo</p>
+                        {ex.video_url && (
+                          <video
+                            src={ex.video_url}
+                            controls
+                            playsInline
+                            className="w-full max-h-48 rounded-xl border border-stone-100 bg-stone-900"
+                          />
+                        )}
+                        <label className={`flex items-center gap-2 text-xs px-3 py-2 rounded-xl border cursor-pointer transition-colors ${
+                          isUploadingVideo ? 'border-stone-100 text-stone-300' : 'border-stone-200 text-stone-500 active:bg-stone-50'
+                        }`}>
+                          <span>{isUploadingVideo ? '⏳' : '🎬'}</span>
+                          <span>{isUploadingVideo ? 'Wird hochgeladen…' : ex.video_url ? 'Video ändern' : 'Video hinzufügen'}</span>
+                          <input
+                            type="file"
+                            accept="video/*"
+                            className="hidden"
+                            disabled={isUploadingVideo}
+                            onChange={e => {
+                              const file = e.target.files?.[0]
+                              if (file) handleVideoUpload(ex, file)
                               e.target.value = ''
                             }}
                           />
@@ -245,34 +547,72 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                           value={notesValue}
                           onChange={e => setEditNotes(prev => ({ ...prev, [ex.id]: e.target.value }))}
                           onBlur={() => handleNotesSave(ex)}
-                          className="w-full px-3 py-2 text-xs rounded-lg border border-stone-200 text-stone-700 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-stone-200 text-stone-700 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
                         />
                       </div>
+
+                      {/* Lernkurve */}
+                      {history.length > 0 && <LevelTimeline history={history} />}
+
+                      {/* Edit / Delete für eigene Übungen */}
+                      {isCustom && (
+                        <div className="flex gap-2 pt-1 border-t border-stone-50">
+                          <button
+                            onClick={() => handleEditStart(ex)}
+                            className="flex-1 py-2 text-xs text-stone-500 border border-stone-200 rounded-xl active:bg-stone-50"
+                          >
+                            ✏️ Bearbeiten
+                          </button>
+                          {confirmDeleteId === ex.id ? (
+                            <div className="flex gap-1.5 flex-1">
+                              <button
+                                onClick={() => handleDelete(ex.id)}
+                                className="flex-1 py-2 text-xs bg-red-500 text-white rounded-xl active:scale-95 transition-transform font-semibold"
+                              >
+                                Löschen
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="flex-1 py-2 text-xs border border-stone-200 text-stone-500 rounded-xl"
+                              >
+                                Abbrechen
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteId(ex.id)}
+                              className="py-2 px-3 text-xs text-red-400 border border-red-100 rounded-xl active:bg-red-50"
+                            >
+                              🗑️
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </details>
                 )
               })}
 
-              {/* Inline-Formular */}
+              {/* Inline-Formular für neue Übung */}
               {addingTo === cat.key && (
-                <div className="bg-white rounded-xl border border-amber-200 p-4 flex flex-col gap-3">
+                <div className="bg-white rounded-2xl shadow-sm border border-amber-200 p-4 flex flex-col gap-3">
                   <p className="text-sm font-semibold text-stone-700">Neue Übung — {cat.label}</p>
 
                   <input
                     autoFocus
                     type="text"
                     placeholder="Name der Übung *"
-                    value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                    value={addForm.name}
+                    onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
                   />
 
                   <input
                     type="text"
                     placeholder="Beschreibung (optional)"
-                    value={form.description}
-                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                    value={addForm.description}
+                    onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
                   />
 
                   <div className="flex flex-col gap-2">
@@ -283,9 +623,9 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                         <input
                           type="text"
                           placeholder={CUSTOM_CRITERIA[l]}
-                          value={form[l]}
-                          onChange={e => setForm(f => ({ ...f, [l]: e.target.value }))}
-                          className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                          value={addForm[l]}
+                          onChange={e => setAddForm(f => ({ ...f, [l]: e.target.value }))}
+                          className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
                         />
                       </div>
                     ))}
@@ -293,15 +633,15 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
 
                   <div className="flex gap-2 pt-1">
                     <button
-                      onClick={() => handleSubmit(cat.key)}
-                      disabled={!form.name.trim()}
-                      className="flex-1 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg disabled:opacity-40 active:scale-95 transition-transform"
+                      onClick={() => handleAddSubmit(cat.key)}
+                      disabled={!addForm.name.trim()}
+                      className="flex-1 py-2 bg-amber-600 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
                     >
                       Speichern
                     </button>
                     <button
-                      onClick={() => { setAddingTo(null); setForm(EMPTY_FORM) }}
-                      className="px-4 py-2 text-sm text-stone-500 border border-stone-200 rounded-lg active:bg-stone-50"
+                      onClick={() => { setAddingTo(null); setAddForm(EMPTY_FORM) }}
+                      className="px-4 py-2 text-sm text-stone-500 border border-stone-200 rounded-xl active:bg-stone-50"
                     >
                       Abbrechen
                     </button>
@@ -310,7 +650,10 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
               )}
 
               {allCatExs.length === 0 && addingTo !== cat.key && (
-                <p className="text-xs text-stone-300 px-1">Noch keine Übungen — tippe auf "+ Übung"</p>
+                <div className="text-center py-4 px-2">
+                  <p className="text-sm text-stone-300">Noch keine Übungen</p>
+                  <p className="text-xs text-stone-300 mt-0.5">Tippe auf „+ Übung" um zu starten</p>
+                </div>
               )}
             </div>
           </div>

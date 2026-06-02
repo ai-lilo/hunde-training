@@ -59,7 +59,26 @@ export function useDeleteCustomExercise(userId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('custom_exercises').delete().eq('id', id)
+      const { error } = await supabase.from('custom_exercises').delete().eq('id', id).eq('user_id', userId)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['custom-exercises', userId] }),
+  })
+}
+
+export function useUpdateCustomExercise(userId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (fields: { id: string; name: string; description?: string; criteria?: LevelCriteria }) => {
+      const { error } = await supabase
+        .from('custom_exercises')
+        .update({
+          name: fields.name,
+          description: fields.description ?? null,
+          criteria: fields.criteria ?? null,
+        })
+        .eq('id', fields.id)
+        .eq('user_id', userId)
       if (error) throw error
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['custom-exercises', userId] }),
