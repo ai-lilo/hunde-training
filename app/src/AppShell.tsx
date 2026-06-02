@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { useProfile } from './hooks/useProfile'
 import { useActiveDog } from './hooks/useActiveDog'
@@ -50,7 +50,7 @@ export function AppShell() {
   if (authLoading || (user && profileLoading)) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -71,7 +71,7 @@ export function AppShell() {
         </div>
         <button
           onClick={() => setAuthError(null)}
-          className="px-6 py-3 bg-amber-600 text-white font-semibold rounded-xl active:scale-95 transition-transform"
+          className="px-6 py-3 bg-teal-600 text-white font-semibold rounded-xl active:scale-95 transition-transform"
         >
           Erneut anmelden
         </button>
@@ -108,7 +108,7 @@ export function AppShell() {
   if (dogsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

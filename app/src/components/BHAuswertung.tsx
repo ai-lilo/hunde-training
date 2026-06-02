@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, CartesianGrid,
@@ -102,7 +102,7 @@ export function BHAuswertung({ sessions, allExercises }: Props) {
               onClick={() => setRange(r.value)}
               className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                 range === r.value
-                  ? 'bg-amber-100 text-amber-800 border-amber-300'
+                  ? 'bg-teal-100 text-teal-800 border-teal-300'
                   : 'bg-stone-50 text-stone-500 border-stone-200 active:bg-stone-100'
               }`}
             >
@@ -119,7 +119,7 @@ export function BHAuswertung({ sessions, allExercises }: Props) {
               onClick={() => setActiveTab(t.value)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 activeTab === t.value
-                  ? 'bg-white text-amber-700 shadow-sm'
+                  ? 'bg-white text-teal-700 shadow-sm'
                   : 'text-stone-500 active:bg-stone-200'
               }`}
             >

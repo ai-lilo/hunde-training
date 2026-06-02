@@ -3,7 +3,6 @@ import { buildAllExercises } from './data/exercises'
 import { Dashboard } from './screens/Dashboard'
 import { LogSession } from './screens/LogSession'
 import { Progress } from './screens/Progress'
-import { Empfehlung } from './screens/Empfehlung'
 import { GrundlagenFortschritt } from './screens/GrundlagenFortschritt'
 import { GrundlagenEinheit } from './screens/GrundlagenEinheit'
 import { Einstellungen } from './screens/Einstellungen'
@@ -12,12 +11,11 @@ import { Einstellungen } from './screens/Einstellungen'
 const Tagebuch = lazy(() => import('./screens/Tagebuch').then(m => ({ default: m.Tagebuch })))
 const ROFortschritt = lazy(() => import('./screens/ROFortschritt').then(m => ({ default: m.ROFortschritt })))
 const ROEinheit = lazy(() => import('./screens/ROEinheit').then(m => ({ default: m.ROEinheit })))
-const Kommandos = lazy(() => import('./screens/Kommandos').then(m => ({ default: m.Kommandos })))
 
 function ScreenLoader() {
   return (
     <div className="flex items-center justify-center h-32">
-      <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
     </div>
   )
 }
@@ -34,10 +32,10 @@ import { useCommands } from './hooks/useCommands'
 import type { Dog } from './hooks/useDogs'
 import type { Exercise, Level, ExerciseOverride, LevelCriteria } from './data/types'
 
-type BHScreen = 'dashboard' | 'fortschritt' | 'empfehlung' | 'einheit' | 'tagebuch'
+type BHScreen = 'dashboard' | 'fortschritt' | 'tagebuch' | 'einheit'
 type ROScreen = 'ro-fortschritt' | 'ro-einheit' | 'ro-tagebuch'
 type GLScreen = 'gl-fortschritt' | 'gl-einheit'
-type Sport = 'bh' | 'ro' | 'grundlagen' | 'kommandos'
+type Sport = 'bh' | 'ro' | 'grundlagen'
 
 export interface RecentSave {
   exerciseId: string
@@ -49,7 +47,6 @@ export interface RecentSave {
 
 const BH_NAV: { id: BHScreen; label: string; icon: string }[] = [
   { id: 'dashboard',   label: 'Übersicht',   icon: '🏠' },
-  { id: 'empfehlung',  label: 'Was heute?',  icon: '💡' },
   { id: 'fortschritt', label: 'Fortschritt', icon: '📈' },
   { id: 'tagebuch',    label: 'Tagebuch',    icon: '📔' },
 ]
@@ -119,7 +116,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
   if (builtinLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -173,7 +170,6 @@ export default function MainApp({ dogId, dog, userId }: Props) {
     { id: 'grundlagen', label: 'Grundlagen' },
     ...(hasBH ? [{ id: 'bh' as Sport, label: 'BH' }] : []),
     ...(hasRO ? [{ id: 'ro' as Sport, label: 'Rally OB' }] : []),
-    { id: 'kommandos', label: '🗣️' },
   ]
 
   return (
@@ -197,7 +193,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
               onClick={() => setSport(tab.id)}
               className={`flex-1 py-3 text-sm font-semibold transition-colors whitespace-nowrap px-3 min-w-0 ${
                 sport === tab.id
-                  ? 'text-amber-700 border-b-2 border-amber-600'
+                  ? 'text-teal-700 border-b-2 border-teal-600'
                   : 'text-stone-400'
               }`}
             >
@@ -239,13 +235,6 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                 allCommands={commands}
                 onUpdateExercise={handleUpdateExercise}
                 onDeleteExercise={handleDeleteExercise}
-              />
-            )}
-            {bhScreen === 'empfehlung' && (
-              <Empfehlung
-                statuses={exerciseStatuses}
-                allExercises={allExercises}
-                onLogSession={() => setBhScreen('einheit')}
               />
             )}
             {bhScreen === 'tagebuch' && (
@@ -318,12 +307,6 @@ export default function MainApp({ dogId, dog, userId }: Props) {
             </Suspense>
           </>
         )}
-
-        {sport === 'kommandos' && (
-          <Suspense fallback={<ScreenLoader />}>
-            <Kommandos commands={commands} userId={userId} />
-          </Suspense>
-        )}
       </div>
 
       {/* Bottom Nav */}
@@ -334,7 +317,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                 key={item.id}
                 onClick={() => setGlScreen(item.id)}
                 className={`flex-1 flex flex-col items-center gap-1 py-3.5 transition-colors active:scale-95 ${
-                  glScreen === item.id ? 'text-amber-700' : 'text-stone-400'
+                  glScreen === item.id ? 'text-teal-700 border-t-2 border-teal-600' : 'text-stone-400'
                 }`}
               >
                 <span className="text-xl leading-none">{item.icon}</span>
@@ -347,7 +330,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                   key={item.id}
                   onClick={() => setBhScreen(item.id)}
                   className={`flex-1 flex flex-col items-center gap-1 py-3.5 transition-colors active:scale-95 ${
-                    currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
+                    currentNavId === item.id ? 'text-teal-700 border-t-2 border-teal-600' : 'text-stone-400'
                   }`}
                 >
                   <span className="text-xl leading-none">{item.icon}</span>
@@ -360,7 +343,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
                     key={item.id}
                     onClick={() => setRoScreen(item.id)}
                     className={`flex-1 flex flex-col items-center gap-1 py-3.5 transition-colors active:scale-95 ${
-                      currentNavId === item.id ? 'text-amber-700' : 'text-stone-400'
+                      currentNavId === item.id ? 'text-teal-700 border-t-2 border-teal-600' : 'text-stone-400'
                     }`}
                   >
                     <span className="text-xl leading-none">{item.icon}</span>

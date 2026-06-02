@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { Exercise, TrainingEntry, Level, ExerciseStatus } from '../data/types'
 import { getStatusMap, nextLevel } from '../data/progression'
+import { LEVEL_LABEL } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
 import { CustomExerciseModal } from '../components/CustomExerciseModal'
 import { useWakeLock } from '../hooks/useWakeLock'
@@ -17,14 +18,6 @@ const RATING_LABEL: Record<1 | 2 | 3, { emoji: string; label: string }> = {
   1: { emoji: '😕', label: 'Schwierig' },
   2: { emoji: '🙂', label: 'Okay' },
   3: { emoji: '😄', label: 'Gut' },
-}
-
-const LEVEL_LABEL: Record<Level, string> = {
-  nicht_begonnen: 'Nicht begonnen',
-  aufbau: 'Aufbau',
-  basis: 'Basis',
-  stabil: 'Stabil',
-  pruefungsreif: 'Prüfungsreif',
 }
 
 export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCustomExercise }: Props) {
@@ -131,7 +124,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
                         >
                           <div className="flex items-center gap-3">
                             <span className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                              isSelected ? 'bg-amber-500 border-amber-500' : 'border-stone-300'
+                              isSelected ? 'bg-teal-500 border-teal-500' : 'border-stone-300'
                             }`}>
                               {isSelected && <span className="text-white text-xs font-bold">✓</span>}
                             </span>
@@ -153,7 +146,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
                                     onClick={() => setRatings(prev => ({ ...prev, [ex.id]: r }))}
                                     className={`flex-1 py-2 rounded-lg text-sm border transition-colors ${
                                       getRating(ex.id) === r
-                                        ? 'bg-amber-50 border-amber-400 text-amber-800'
+                                        ? 'bg-teal-50 border-teal-400 text-teal-800'
                                         : 'bg-white border-stone-200 text-stone-600'
                                     }`}
                                   >
@@ -205,7 +198,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
                               placeholder="Notiz (optional)"
                               value={getNote(ex.id)}
                               onChange={ev => setNotes(prev => ({ ...prev, [ex.id]: ev.target.value }))}
-                              className="w-full text-sm border border-stone-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 bg-white"
+                              className="w-full text-sm border border-stone-200 rounded-lg px-3 py-2 outline-none focus:border-teal-400 bg-white"
                             />
 
                             {/* Sub-exercises */}
@@ -223,7 +216,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
                                           className="flex items-center gap-2 text-left w-full"
                                         >
                                           <span className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                                            isSubSelected ? 'bg-amber-500 border-amber-500' : 'border-stone-300'
+                                            isSubSelected ? 'bg-teal-500 border-teal-500' : 'border-stone-300'
                                           }`}>
                                             {isSubSelected && <span className="text-white text-[10px] font-bold leading-none">✓</span>}
                                           </span>
@@ -238,7 +231,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
                                                 onClick={() => setRatings(prev => ({ ...prev, [sub.id]: r }))}
                                                 className={`flex-1 py-1 rounded-lg text-xs border transition-colors ${
                                                   getRating(sub.id) === r
-                                                    ? 'bg-amber-50 border-amber-400 text-amber-800'
+                                                    ? 'bg-teal-50 border-teal-400 text-teal-800'
                                                     : 'bg-white border-stone-200 text-stone-600'
                                                 }`}
                                               >
@@ -267,7 +260,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-stone-200 text-sm text-stone-400 active:border-amber-300 active:text-amber-600 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-stone-200 text-sm text-stone-400 active:border-teal-300 active:text-teal-600 transition-colors"
           >
             <span className="text-lg leading-none">+</span>
             Eigene Übung hinzufügen
@@ -281,7 +274,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
               value={generalNote}
               onChange={ev => setGeneralNote(ev.target.value)}
               rows={3}
-              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2 outline-none focus:border-amber-400 bg-white resize-none"
+              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2 outline-none focus:border-teal-400 bg-white resize-none"
             />
           </div>
 
@@ -292,7 +285,7 @@ export function LogSession({ statuses, allExercises, onSave, onCancel, onAddCust
             disabled={!canSave}
             className={`w-full py-4 rounded-2xl text-base font-semibold transition-colors mb-4 ${
               canSave
-                ? 'bg-amber-600 text-white active:bg-green-600'
+                ? 'bg-teal-600 text-white active:bg-green-600'
                 : 'bg-stone-100 text-stone-300 cursor-not-allowed'
             }`}
           >

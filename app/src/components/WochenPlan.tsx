@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import type { Exercise, ExerciseStatus, TrainingSession } from '../data/types'
 import { getSuggestions } from '../data/progression'
 import { LevelBadge } from './LevelBadge'
@@ -112,7 +112,7 @@ export function WochenPlan({ statuses, allExercises, sessions, onLogSession }: P
 
       <button
         onClick={onLogSession}
-        className="mt-3 w-full py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform"
+        className="mt-3 w-full py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform"
       >
         Einheit starten →
       </button>

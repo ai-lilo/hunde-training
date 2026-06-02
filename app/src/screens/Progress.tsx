@@ -1,13 +1,15 @@
-import { useMemo, useState, memo } from 'react'
+import { useMemo, useState } from 'react'
 import type { Exercise, ExerciseOverride, ExerciseStatus, Level, TrainingSession, Command } from '../data/types'
 import { getStatusMap, levelIndex, nextLevel } from '../data/progression'
+import { LEVEL_LABEL, CATEGORY_LABEL, LEVEL_ORDER } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
+import { LevelTimeline } from '../components/LevelTimeline'
+import { CommandChip } from '../components/CommandChip'
 import { ExerciseEditModal } from '../components/ExerciseEditModal'
 import { BHAuswertung } from '../components/BHAuswertung'
 import { useSetExerciseLevel } from '../hooks/useExerciseProgress'
 import { useAllExerciseCommands, useLinkCommand, useUnlinkCommand } from '../hooks/useExerciseCommands'
 import { useAllExerciseLevelHistory } from '../hooks/useExerciseLevelHistory'
-import type { LevelHistoryEntry } from '../hooks/useExerciseLevelHistory'
 
 interface Props {
   statuses: ExerciseStatus[]
@@ -18,56 +20,6 @@ interface Props {
   allCommands: Command[]
   onUpdateExercise: (id: string, changes: ExerciseOverride) => void
   onDeleteExercise: (id: string) => void
-}
-
-const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif']
-
-const LEVEL_LABEL: Record<Level, string> = {
-  nicht_begonnen: 'Nicht begonnen',
-  aufbau: 'Aufbau',
-  basis: 'Basis',
-  stabil: 'Stabil',
-  pruefungsreif: 'Prüfungsreif',
-}
-
-const CATEGORY_LABEL: Record<string, string> = {
-  grundlage: 'Grundlagen',
-  unterordnung: 'Unterordnung',
-  verkehr: 'Verkehrsteil',
-  pruefung: 'Prüfungsablauf',
-  sport: 'Sport',
-}
-
-const LevelTimeline = memo(function LevelTimeline({ history }: { history: LevelHistoryEntry[] }) {
-  if (history.length === 0) return null
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-xs font-medium text-stone-400 mb-0.5">Lernkurve</p>
-      <div className="flex flex-col gap-1.5 pl-1">
-        {history.map((entry, i) => (
-          <div key={i} className="flex items-center gap-2.5">
-            <div className="flex flex-col items-center">
-              <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
-              {i < history.length - 1 && <div className="w-px h-3 bg-amber-200" />}
-            </div>
-            <span className="text-xs text-stone-700 font-medium">{LEVEL_LABEL[entry.level]}</span>
-            <span className="text-xs text-stone-400 ml-auto">
-              {new Date(entry.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-})
-
-function CommandChip({ name, onRemove }: { name: string; onRemove: () => void }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1">
-      {name}
-      <button onClick={onRemove} className="text-amber-400 hover:text-amber-600 ml-0.5 leading-none">×</button>
-    </span>
-  )
 }
 
 export function Progress({ statuses, allExercises, sessions, dogId, userId, allCommands, onUpdateExercise, onDeleteExercise }: Props) {
@@ -136,12 +88,12 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
                   const isLevelUp = levelUpId === ex.id
 
                   return (
-                    <details key={ex.id} className={`bg-white rounded-2xl shadow-sm group ${isLevelUp ? 'ring-2 ring-green-400' : isCustom ? 'border border-amber-100' : 'border border-stone-100'}`}>
-                      <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer list-none select-none active:bg-stone-50 rounded-2xl">
+                    <details key={ex.id} className={`bg-white rounded-xl shadow-sm group ${isLevelUp ? 'ring-2 ring-green-400' : isCustom ? 'border border-teal-100' : 'border border-stone-100'}`}>
+                      <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer list-none select-none active:bg-stone-50 rounded-xl">
                         <div className="flex flex-col min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-sm font-semibold text-stone-800 truncate">{ex.name}</span>
-                            {isCustom && <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200 flex-shrink-0">eigene</span>}
+                            {isCustom && <span className="text-[10px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-full border border-teal-200 flex-shrink-0">eigene</span>}
                           </div>
                           <span className="text-xs text-stone-400 mt-0.5 truncate">{ex.criteria[current]}</span>
                         </div>
@@ -160,7 +112,7 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
                             {LEVEL_ORDER.map((l, i) => (
                               <div
                                 key={l}
-                                className={`flex-1 h-1.5 rounded-full transition-colors ${i <= idx ? 'bg-amber-400' : 'bg-stone-100'}`}
+                                className={`flex-1 h-1.5 rounded-full transition-colors ${i <= idx ? 'bg-teal-400' : 'bg-stone-100'}`}
                               />
                             ))}
                           </div>
@@ -174,7 +126,7 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
                           {next && !showResetFor && (
                             <button
                               onClick={() => handleNextLevel(ex, current)}
-                              className="w-full py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform"
+                              className="w-full py-2.5 bg-teal-700 text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform"
                             >
                               Nächste Stufe → {LEVEL_LABEL[next]}
                             </button>
@@ -204,7 +156,7 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
                                       setShowResetFor(null)
                                     }}
                                     className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                                      current === l ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
+                                      current === l ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
                                     }`}
                                   >
                                     {LEVEL_LABEL[l]}
@@ -218,9 +170,9 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
 
                         {/* Nächste Stufe Beschreibung */}
                         {next && !isLevelUp && (
-                          <div className="bg-amber-50 rounded-xl p-3">
-                            <p className="text-xs font-medium text-amber-700 mb-0.5">Ziel: {LEVEL_LABEL[next]}</p>
-                            <p className="text-xs text-amber-600">{ex.criteria[next]}</p>
+                          <div className="bg-teal-50 rounded-xl p-3">
+                            <p className="text-xs font-medium text-teal-700 mb-0.5">Ziel: {LEVEL_LABEL[next]}</p>
+                            <p className="text-xs text-teal-600">{ex.criteria[next]}</p>
                           </div>
                         )}
 
@@ -228,7 +180,7 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
                         <button
                           type="button"
                           onClick={() => setEditingExercise(ex)}
-                          className="self-start text-xs text-amber-600 border border-amber-200 rounded-lg px-2.5 py-1 active:bg-amber-50"
+                          className="self-start text-xs text-teal-700 border border-teal-200 rounded-lg px-2.5 py-1 active:bg-teal-50"
                         >
                           ✎ Bearbeiten
                         </button>
@@ -285,7 +237,7 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
                                       <button
                                         key={cmd.id}
                                         onClick={() => handleLinkCommand(ex.id, cmd.id)}
-                                        className="text-left text-xs px-3 py-2 rounded-lg bg-stone-50 border border-stone-100 text-stone-700 active:bg-amber-50"
+                                        className="text-left text-xs px-3 py-2 rounded-lg bg-stone-50 border border-stone-100 text-stone-700 active:bg-teal-50"
                                       >
                                         <span className="font-medium">{cmd.name}</span>
                                         {cmd.description && <span className="text-stone-400"> — {cmd.description}</span>}
@@ -299,14 +251,14 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
                             allCommands.length > 0 && (
                               <button
                                 onClick={() => setShowCommandPickerFor(ex.id)}
-                                className="text-xs text-amber-600 border border-amber-200 rounded-lg px-2.5 py-1.5 self-start active:bg-amber-50"
+                                className="text-xs text-teal-700 border border-teal-200 rounded-lg px-2.5 py-1.5 self-start active:bg-teal-50"
                               >
                                 + Kommando verknüpfen
                               </button>
                             )
                           )}
                           {allCommands.length === 0 && (
-                            <p className="text-xs text-stone-300 italic">Zuerst Kommandos anlegen (Tab „Kommandos")</p>
+                            <p className="text-xs text-stone-300 italic">Kommandos anlegen in den Einstellungen</p>
                           )}
                         </div>
 
@@ -355,7 +307,7 @@ export function Progress({ statuses, allExercises, sessions, dogId, userId, allC
                   weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit'
                 })
                 return (
-                  <div key={s.id} className="bg-white rounded-2xl shadow-sm border border-stone-100 px-4 py-3">
+                  <div key={s.id} className="bg-white rounded-xl shadow-sm border border-stone-100 px-4 py-3">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold text-stone-700">{date}</span>
                       <span className="text-xs text-stone-400">{s.entries.length} Übung{s.entries.length !== 1 ? 'en' : ''}</span>

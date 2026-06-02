@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { Category } from '../data/types'
 
 interface Props {
@@ -44,7 +44,7 @@ export function CustomExerciseModal({ onAdd, onClose }: Props) {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="z. B. Apportieren, Dummy, Spin..."
-              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-amber-400 bg-white"
+              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-teal-400 bg-white"
               autoFocus
             />
           </div>
@@ -54,7 +54,7 @@ export function CustomExerciseModal({ onAdd, onClose }: Props) {
             <select
               value={category}
               onChange={e => setCategory(e.target.value as Category)}
-              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-amber-400 bg-white"
+              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-teal-400 bg-white"
             >
               {CATEGORIES.map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
@@ -69,7 +69,7 @@ export function CustomExerciseModal({ onAdd, onClose }: Props) {
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Kurze Beschreibung der Übung"
-              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-amber-400 bg-white"
+              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-teal-400 bg-white"
             />
           </div>
         </div>
@@ -80,7 +80,7 @@ export function CustomExerciseModal({ onAdd, onClose }: Props) {
           disabled={!name.trim()}
           className={`w-full py-3.5 rounded-2xl text-sm font-semibold transition-colors ${
             name.trim()
-              ? 'bg-amber-600 text-white active:bg-amber-700'
+              ? 'bg-teal-600 text-white active:bg-teal-700'
               : 'bg-stone-100 text-stone-300 cursor-not-allowed'
           }`}
         >

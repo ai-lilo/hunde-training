@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { Exercise, ExerciseStatus, TrainingSession } from '../data/types'
 import { getBhProgress, getStatusMap, getSuggestions, levelIndex } from '../data/progression'
+import { CATEGORY_LABEL } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
 import { WochenPlan } from '../components/WochenPlan'
 import type { RecentSave } from '../App'
@@ -16,21 +17,13 @@ interface Props {
   onNavigate: (screen: string) => void
 }
 
-const CATEGORY_LABEL: Record<string, string> = {
-  grundlage: 'Grundlagen',
-  unterordnung: 'Unterordnung',
-  verkehr: 'Verkehrsteil',
-  pruefung: 'Prüfungsablauf',
-  sport: 'Sport',
-}
-
 const RATING_EMOJI: Record<1 | 2 | 3, string> = { 1: '😕', 2: '🙂', 3: '😄' }
 
 export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, onDismissRecentSave, onNavigate }: Props) {
   const exerciseMap = useMemo(() => Object.fromEntries(allExercises.map(e => [e.id, e])), [allExercises])
   const { done, total, percent } = getBhProgress(statuses, allExercises)
   const map = getStatusMap(statuses, allExercises)
-  const topSuggestions = getSuggestions(statuses, allExercises).slice(0, 2)
+  const topSuggestions = getSuggestions(statuses, allExercises).slice(0, 4)
 
   const categories = ['grundlage', 'unterordnung', 'verkehr', 'pruefung', 'sport'] as const
   const levelUps = recentSave?.filter(s => levelIndex(s.levelAfter) > levelIndex(s.levelBefore)) ?? []
@@ -39,7 +32,7 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
     <div className="flex flex-col gap-5 p-4 pb-28 animate-fadein">
       {/* Header — persönlich und warm */}
       <div className="pt-3 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
+        <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center text-2xl flex-shrink-0">
           🐾
         </div>
         <div>
@@ -108,11 +101,11 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-100">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold text-stone-700">BH-Fortschritt</span>
-          <span className="text-sm font-semibold text-amber-600">{done}/{total}</span>
+          <span className="text-sm font-semibold text-teal-600">{done}/{total}</span>
         </div>
         <div className="h-3 bg-stone-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-700"
+            className="h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-700"
             style={{ width: `${percent}%` }}
           />
         </div>
@@ -129,15 +122,11 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
 
       {/* Top suggestions */}
       {topSuggestions.length > 0 && (
-        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100">
-          <p className="text-sm font-semibold text-amber-800 mb-3">Als nächstes üben</p>
+        <div className="bg-teal-50 rounded-xl p-4 border border-teal-100">
+          <p className="text-sm font-semibold text-teal-800 mb-3">Als nächstes üben</p>
           <div className="flex flex-col gap-2">
             {topSuggestions.map(s => (
-              <button
-                key={s.exercise.id}
-                onClick={() => onNavigate('empfehlung')}
-                className="flex items-start gap-3 text-left"
-              >
+              <div key={s.exercise.id} className="flex items-start gap-3">
                 <span className={`mt-0.5 text-xs font-bold px-1.5 py-0.5 rounded ${
                   s.priority === 'kritisch' ? 'bg-red-100 text-red-700' :
                   s.priority === 'hoch'     ? 'bg-orange-100 text-orange-700' :
@@ -149,15 +138,9 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
                   <p className="text-sm font-medium text-stone-800">{s.exercise.name}</p>
                   <p className="text-xs text-stone-500 mt-0.5">{s.exercise.criteria[s.targetLevel]}</p>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
-          <button
-            onClick={() => onNavigate('empfehlung')}
-            className="mt-3 text-xs text-amber-700 font-medium"
-          >
-            Alle Empfehlungen →
-          </button>
         </div>
       )}
 
@@ -197,7 +180,7 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
       {/* Trainingseinheit starten */}
       <button
         onClick={() => onNavigate('einheit')}
-        className="w-full py-3.5 bg-amber-600 text-white text-sm font-semibold rounded-2xl shadow-sm active:scale-95 transition-transform"
+        className="w-full py-3.5 bg-teal-600 text-white text-sm font-semibold rounded-2xl shadow-sm active:scale-95 transition-transform"
       >
         + Neue Trainingseinheit
       </button>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAllSports } from '../hooks/useUserSports'
 import { useCreateDog } from '../hooks/useDogs'
@@ -66,8 +66,8 @@ export function Onboarding({ userId, onComplete }: Props) {
           <div
             key={s}
             className={`flex-1 h-1.5 rounded-full transition-colors ${
-              step === s ? 'bg-amber-500' :
-              (['name', 'sports', 'dog'] as Step[]).indexOf(step) > i ? 'bg-amber-300' : 'bg-stone-200'
+              step === s ? 'bg-teal-500' :
+              (['name', 'sports', 'dog'] as Step[]).indexOf(step) > i ? 'bg-teal-300' : 'bg-stone-200'
             }`}
           />
         ))}
@@ -85,12 +85,12 @@ export function Onboarding({ userId, onComplete }: Props) {
             value={displayName}
             onChange={e => setDisplayName(e.target.value)}
             placeholder="Dein Name (optional)"
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
           />
           <div className="mt-auto">
             <button
               onClick={() => setStep('sports')}
-              className="w-full py-3 bg-amber-600 text-white font-semibold rounded-xl active:scale-95 transition-transform"
+              className="w-full py-3 bg-teal-600 text-white font-semibold rounded-xl active:scale-95 transition-transform"
             >
               Weiter
             </button>
@@ -112,16 +112,16 @@ export function Onboarding({ userId, onComplete }: Props) {
                 onClick={() => toggleSport(sport.id)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-colors ${
                   selectedSportIds.includes(sport.id)
-                    ? 'border-amber-500 bg-amber-50'
+                    ? 'border-teal-500 bg-teal-50'
                     : 'border-stone-200 bg-white'
                 }`}
               >
                 <span className="text-2xl">{sport.icon}</span>
-                <span className={`font-medium ${selectedSportIds.includes(sport.id) ? 'text-amber-800' : 'text-stone-700'}`}>
+                <span className={`font-medium ${selectedSportIds.includes(sport.id) ? 'text-teal-800' : 'text-stone-700'}`}>
                   {sport.name}
                 </span>
                 {selectedSportIds.includes(sport.id) && (
-                  <span className="ml-auto text-amber-600">✓</span>
+                  <span className="ml-auto text-teal-600">✓</span>
                 )}
               </button>
             ))}
@@ -135,7 +135,7 @@ export function Onboarding({ userId, onComplete }: Props) {
             </button>
             <button
               onClick={() => setStep('dog')}
-              className="flex-1 py-3 bg-amber-600 text-white font-semibold rounded-xl active:scale-95 transition-transform"
+              className="flex-1 py-3 bg-teal-600 text-white font-semibold rounded-xl active:scale-95 transition-transform"
             >
               Weiter
             </button>
@@ -158,7 +158,7 @@ export function Onboarding({ userId, onComplete }: Props) {
                 value={dogName}
                 onChange={e => setDogName(e.target.value)}
                 placeholder="z.B. Ari"
-                className="mt-1 w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="mt-1 w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
               />
             </div>
             <div>
@@ -168,7 +168,7 @@ export function Onboarding({ userId, onComplete }: Props) {
                 value={dogBreed}
                 onChange={e => setDogBreed(e.target.value)}
                 placeholder="z.B. Australian Shepherd"
-                className="mt-1 w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="mt-1 w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
               />
             </div>
           </div>
@@ -182,7 +182,7 @@ export function Onboarding({ userId, onComplete }: Props) {
             <button
               onClick={handleFinish}
               disabled={!dogName.trim() || saving}
-              className="flex-1 py-3 bg-amber-600 text-white font-semibold rounded-xl disabled:opacity-50 active:scale-95 transition-transform"
+              className="flex-1 py-3 bg-teal-600 text-white font-semibold rounded-xl disabled:opacity-50 active:scale-95 transition-transform"
             >
               {saving ? 'Wird gespeichert…' : 'Loslegen!'}
             </button>

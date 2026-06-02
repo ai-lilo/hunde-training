@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+﻿import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
@@ -21,7 +21,7 @@ export function AuthCallback() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4">
-      <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
       <p className="text-sm text-stone-500">Anmeldung wird verarbeitet…</p>
     </div>
   )

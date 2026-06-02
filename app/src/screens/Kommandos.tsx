@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { Command } from '../data/types'
 import { useAddCommand, useUpdateCommand, useDeleteCommand } from '../hooks/useCommands'
 
@@ -17,7 +17,7 @@ const SPORT_LABEL: Record<string, string> = {
 
 const SPORT_COLOR: Record<string, string> = {
   alltag: 'bg-stone-100 text-stone-600',
-  bh: 'bg-amber-100 text-amber-700',
+  bh: 'bg-teal-100 text-teal-700',
   ro: 'bg-blue-100 text-blue-700',
 }
 
@@ -109,7 +109,7 @@ export function Kommandos({ commands, userId }: Props) {
         {!showAddForm && (
           <button
             onClick={() => { setShowAddForm(true); setAddForm(EMPTY_FORM) }}
-            className="mt-1 bg-amber-600 text-white text-sm font-semibold px-3.5 py-2 rounded-xl active:scale-95 transition-transform"
+            className="mt-1 bg-teal-600 text-white text-sm font-semibold px-3.5 py-2 rounded-xl active:scale-95 transition-transform"
           >
             + Neu
           </button>
@@ -118,7 +118,7 @@ export function Kommandos({ commands, userId }: Props) {
 
       {/* Formular: Neues Kommando */}
       {showAddForm && (
-        <div className="bg-white rounded-2xl shadow-sm border border-amber-200 p-4 flex flex-col gap-3">
+        <div className="bg-white rounded-2xl shadow-sm border border-teal-200 p-4 flex flex-col gap-3">
           <p className="text-sm font-semibold text-stone-700">Neues Kommando</p>
 
           <input
@@ -127,7 +127,7 @@ export function Kommandos({ commands, userId }: Props) {
             placeholder='Name, z.B. "Sitz" oder "🤚 Handzeichen Platz"'
             value={addForm.name}
             onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
-            className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+            className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
           />
 
           <input
@@ -135,7 +135,7 @@ export function Kommandos({ commands, userId }: Props) {
             placeholder="Beschreibung (optional)"
             value={addForm.description}
             onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))}
-            className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+            className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
           />
 
           <div>
@@ -147,7 +147,7 @@ export function Kommandos({ commands, userId }: Props) {
                   onClick={() => setAddForm(f => ({ ...f, sportContext: opt.value }))}
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                     addForm.sportContext === opt.value
-                      ? 'bg-amber-500 text-white border-amber-500'
+                      ? 'bg-teal-500 text-white border-teal-500'
                       : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
                   }`}
                 >
@@ -161,7 +161,7 @@ export function Kommandos({ commands, userId }: Props) {
             <button
               onClick={handleAdd}
               disabled={!addForm.name.trim()}
-              className="flex-1 py-2 bg-amber-600 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
+              className="flex-1 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
             >
               Speichern
             </button>
@@ -185,7 +185,7 @@ export function Kommandos({ commands, userId }: Props) {
           </p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="mt-2 bg-amber-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl active:scale-95 transition-transform"
+            className="mt-2 bg-teal-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl active:scale-95 transition-transform"
           >
             Erstes Kommando anlegen
           </button>
@@ -203,20 +203,20 @@ export function Kommandos({ commands, userId }: Props) {
               {group.map(cmd => {
                 if (editingId === cmd.id) {
                   return (
-                    <div key={cmd.id} className="bg-white rounded-2xl shadow-sm border border-amber-200 p-4 flex flex-col gap-3">
+                    <div key={cmd.id} className="bg-white rounded-2xl shadow-sm border border-teal-200 p-4 flex flex-col gap-3">
                       <input
                         autoFocus
                         type="text"
                         value={editForm.name}
                         onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
                       />
                       <input
                         type="text"
                         placeholder="Beschreibung (optional)"
                         value={editForm.description}
                         onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
                       />
                       <div className="flex flex-wrap gap-1.5">
                         {SPORT_OPTIONS.map(opt => (
@@ -225,7 +225,7 @@ export function Kommandos({ commands, userId }: Props) {
                             onClick={() => setEditForm(f => ({ ...f, sportContext: opt.value }))}
                             className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                               editForm.sportContext === opt.value
-                                ? 'bg-amber-500 text-white border-amber-500'
+                                ? 'bg-teal-500 text-white border-teal-500'
                                 : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
                             }`}
                           >
@@ -237,7 +237,7 @@ export function Kommandos({ commands, userId }: Props) {
                         <button
                           onClick={handleEditSubmit}
                           disabled={!editForm.name.trim()}
-                          className="flex-1 py-2 bg-amber-600 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
+                          className="flex-1 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
                         >
                           Speichern
                         </button>

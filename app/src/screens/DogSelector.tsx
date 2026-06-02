@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useDogs, useCreateDog, useDeleteDog } from '../hooks/useDogs'
 import { supabase } from '../lib/supabase'
 
@@ -36,7 +36,7 @@ export function DogSelector({ onSelect }: Props) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -88,7 +88,7 @@ export function DogSelector({ onSelect }: Props) {
                 onClick={() => onSelect(dog.id)}
                 className="flex-1 flex items-center gap-4 p-4 bg-white rounded-2xl border border-stone-100 shadow-sm text-left active:scale-95 transition-transform"
               >
-                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
+                <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
                   🐕
                 </div>
                 <div>
@@ -116,14 +116,14 @@ export function DogSelector({ onSelect }: Props) {
               value={newName}
               onChange={e => setNewName(e.target.value)}
               placeholder="Name des Hundes"
-              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-teal-400"
             />
             <input
               type="text"
               value={newBreed}
               onChange={e => setNewBreed(e.target.value)}
               placeholder="Rasse (optional)"
-              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-teal-400"
             />
             <div className="flex gap-2">
               <button
@@ -135,7 +135,7 @@ export function DogSelector({ onSelect }: Props) {
               <button
                 onClick={handleAdd}
                 disabled={!newName.trim() || adding}
-                className="flex-1 py-2.5 bg-amber-600 text-white font-medium rounded-xl text-sm disabled:opacity-50"
+                className="flex-1 py-2.5 bg-teal-600 text-white font-medium rounded-xl text-sm disabled:opacity-50"
               >
                 {adding ? 'Wird gespeichert…' : 'Hinzufügen'}
               </button>

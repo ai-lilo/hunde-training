@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import type { Exercise, TrainingSession } from '../data/types'
 import { RO_SIGNS } from '../data/ro-signs'
 
@@ -88,7 +88,7 @@ export function Tagebuch({ sessions, allExercises, onDeleteSession }: Props) {
                       <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
                         (session.sport ?? 'bh') === 'ro'
                           ? 'bg-blue-50 text-blue-600'
-                          : 'bg-amber-50 text-amber-700'
+                          : 'bg-teal-50 text-teal-700'
                       }`}>
                         {(session.sport ?? 'bh') === 'ro' ? 'RO' : 'BH'}
                       </span>
@@ -151,7 +151,7 @@ export function Tagebuch({ sessions, allExercises, onDeleteSession }: Props) {
                       {parentEntries.map(e => (
                         <span
                           key={e.exerciseId}
-                          className="text-xs bg-amber-50 text-amber-800 border border-amber-100 px-2 py-0.5 rounded-full"
+                          className="text-xs bg-teal-50 text-teal-800 border border-teal-100 px-2 py-0.5 rounded-full"
                         >
                           {exerciseName(e.exerciseId)}
                         </span>

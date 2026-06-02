@@ -1,4 +1,4 @@
-import type { Exercise, ExerciseStatus } from '../data/types'
+﻿import type { Exercise, ExerciseStatus } from '../data/types'
 import { getSuggestions } from '../data/progression'
 import type { Suggestion } from '../data/progression'
 import { LevelBadge } from '../components/LevelBadge'
@@ -44,7 +44,7 @@ export function Empfehlung({ statuses, allExercises, onLogSession }: Props) {
         </div>
         <button
           onClick={onLogSession}
-          className="mt-1 px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-xl active:scale-95 transition-transform"
+          className="mt-1 px-3 py-1.5 bg-teal-600 text-white text-sm font-medium rounded-xl active:scale-95 transition-transform"
         >
           + Einheit
         </button>
@@ -95,7 +95,7 @@ function SuggestionCard({ suggestion: s }: { suggestion: Suggestion }) {
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs text-stone-400">{CATEGORY_LABEL[s.exercise.category]}</span>
               {s.exercise.bh_required && (
-                <span className="text-xs bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded">BH</span>
+                <span className="text-xs bg-teal-50 text-teal-600 px-1.5 py-0.5 rounded">BH</span>
               )}
             </div>
             <p className="text-sm font-semibold text-stone-800">{s.exercise.name}</p>
@@ -110,9 +110,9 @@ function SuggestionCard({ suggestion: s }: { suggestion: Suggestion }) {
         <p className="text-xs text-stone-500 mt-2 leading-relaxed">{s.reason}</p>
       </div>
 
-      <div className="bg-amber-50 px-4 py-2.5 border-t border-amber-100">
-        <p className="text-xs font-medium text-amber-700">Kriterium für "{s.targetLevel}"</p>
-        <p className="text-xs text-amber-600 mt-0.5">{s.exercise.criteria[s.targetLevel]}</p>
+      <div className="bg-teal-50 px-4 py-2.5 border-t border-teal-100">
+        <p className="text-xs font-medium text-teal-700">Kriterium für "{s.targetLevel}"</p>
+        <p className="text-xs text-teal-600 mt-0.5">{s.exercise.criteria[s.targetLevel]}</p>
       </div>
     </div>
   )

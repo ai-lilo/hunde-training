@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { Exercise, ExerciseOverride } from '../data/types'
 
 interface Props {
@@ -81,7 +81,7 @@ export function ExerciseEditModal({ exercise, allExercises, onSave, onDelete, on
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-amber-400 bg-white"
+              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-teal-400 bg-white"
             />
           </div>
 
@@ -93,7 +93,7 @@ export function ExerciseEditModal({ exercise, allExercises, onSave, onDelete, on
               onChange={e => setDescription(e.target.value)}
               rows={2}
               placeholder="Kurze Beschreibung der Übung"
-              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-amber-400 bg-white resize-none"
+              className="w-full text-sm border border-stone-200 rounded-xl px-3 py-2.5 outline-none focus:border-teal-400 bg-white resize-none"
             />
           </div>
 
@@ -119,7 +119,7 @@ export function ExerciseEditModal({ exercise, allExercises, onSave, onDelete, on
                           className="flex items-center gap-2.5 py-1 text-left"
                         >
                           <span className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                            checked ? 'bg-amber-500 border-amber-500' : 'border-stone-300'
+                            checked ? 'bg-teal-500 border-teal-500' : 'border-stone-300'
                           }`}>
                             {checked && <span className="text-white text-[10px] font-bold leading-none">✓</span>}
                           </span>
@@ -141,7 +141,7 @@ export function ExerciseEditModal({ exercise, allExercises, onSave, onDelete, on
               disabled={!name.trim() || !isDirty}
               className={`w-full py-3.5 rounded-2xl text-sm font-semibold transition-colors ${
                 name.trim() && isDirty
-                  ? 'bg-amber-600 text-white active:bg-amber-700'
+                  ? 'bg-teal-600 text-white active:bg-teal-700'
                   : 'bg-stone-100 text-stone-300 cursor-not-allowed'
               }`}
             >

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { Level, ROClass, ROSignStatus, TrainingSession } from '../data/types'
 import { RO_SIGNS } from '../data/ro-signs'
 import { LevelBadge } from '../components/LevelBadge'
@@ -67,7 +67,7 @@ export function ROFortschritt({ roSignStatuses, sessions, onSetLevel, onNavigate
             onClick={() => { setActiveClass(t.cls); setEditingId(null) }}
             className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               activeClass === t.cls
-                ? 'bg-white text-amber-700 shadow-sm'
+                ? 'bg-white text-teal-700 shadow-sm'
                 : 'text-stone-500 active:bg-stone-200'
             }`}
           >
@@ -124,7 +124,7 @@ export function ROFortschritt({ roSignStatuses, sessions, onSetLevel, onNavigate
                       }}
                       className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                         currentLevel === lvl
-                          ? 'bg-amber-100 text-amber-800 border-amber-300'
+                          ? 'bg-teal-100 text-teal-800 border-teal-300'
                           : 'bg-stone-50 text-stone-600 border-stone-200 active:bg-stone-100'
                       }`}
                     >
@@ -140,7 +140,7 @@ export function ROFortschritt({ roSignStatuses, sessions, onSetLevel, onNavigate
 
       <button
         onClick={onNavigateToEinheit}
-        className="fixed bottom-20 right-4 w-14 h-14 bg-amber-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl active:scale-95 transition-transform"
+        className="fixed bottom-20 right-4 w-14 h-14 bg-teal-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl active:scale-95 transition-transform"
       >
         +
       </button>

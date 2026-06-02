@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Exercise, ExerciseStatus, Level, TrainingEntry } from '../data/types'
 import { getStatusMap, nextLevel } from '../data/progression'
+import { LEVEL_LABEL } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
 import { useWakeLock } from '../hooks/useWakeLock'
 
@@ -12,14 +13,6 @@ const GL_CATEGORY_LABEL: Record<string, string> = {
   gl_platz: 'Platz',
   gl_steh: 'Steh',
   grundlage: 'BH-Grundlagen',
-}
-
-const LEVEL_LABEL: Record<Level, string> = {
-  nicht_begonnen: 'Nicht begonnen',
-  aufbau: 'Aufbau',
-  basis: 'Basis',
-  stabil: 'Stabil',
-  pruefungsreif: 'Prüfungsreif',
 }
 
 interface EntryDraft {
@@ -103,7 +96,7 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
               type="date"
               value={date}
               onChange={e => setDate(e.target.value)}
-              className="text-sm border border-stone-200 rounded-xl px-2.5 py-1.5 text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="text-sm border border-stone-200 rounded-xl px-2.5 py-1.5 text-stone-600 focus:outline-none focus:ring-2 focus:ring-teal-300"
             />
           </div>
 
@@ -120,14 +113,14 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
                   const draft = selected[ex.id]
 
                   return (
-                    <div key={ex.id} className={`rounded-2xl border transition-all ${isChosen ? 'border-amber-300 bg-amber-50 shadow-sm' : 'border-stone-100 bg-white'}`}>
+                    <div key={ex.id} className={`rounded-2xl border transition-all ${isChosen ? 'border-teal-300 bg-teal-50 shadow-sm' : 'border-stone-100 bg-white'}`}>
                       <button
                         type="button"
                         onClick={() => toggleExercise(ex)}
                         className="w-full flex items-center justify-between px-4 py-3.5 text-left"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center text-xs transition-colors ${isChosen ? 'bg-amber-500 border-amber-500 text-white' : 'border-stone-300'}`}>
+                          <span className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center text-xs transition-colors ${isChosen ? 'bg-teal-500 border-teal-500 text-white' : 'border-stone-300'}`}>
                             {isChosen ? '✓' : ''}
                           </span>
                           <span className="text-sm font-semibold text-stone-800 truncate">{ex.name}</span>
@@ -136,7 +129,7 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
                       </button>
 
                       {isChosen && draft && (
-                        <div className="px-4 pb-4 flex flex-col gap-3 border-t border-amber-100 pt-3">
+                        <div className="px-4 pb-4 flex flex-col gap-3 border-t border-teal-100 pt-3">
                           {/* Bewertung */}
                           <div>
                             <p className="text-xs text-stone-500 mb-1.5">Wie lief es?</p>
@@ -146,7 +139,7 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
                                   key={r}
                                   onClick={() => updateEntry(ex.id, { rating: r })}
                                   className={`flex-1 py-2.5 rounded-xl text-xl transition-colors ${
-                                    draft.rating === r ? 'bg-amber-100 ring-2 ring-amber-400' : 'bg-white border border-stone-200'
+                                    draft.rating === r ? 'bg-teal-100 ring-2 ring-teal-400' : 'bg-white border border-stone-200'
                                   }`}
                                 >
                                   {r === 3 ? '😄' : r === 2 ? '🙂' : '😕'}
@@ -163,7 +156,7 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
                                 onClick={() => updateEntry(ex.id, { levelAfter: current })}
                                 className={`flex-1 py-2 rounded-xl text-xs border transition-colors ${
                                   draft.levelAfter === current
-                                    ? 'bg-amber-500 text-white border-amber-500 font-semibold'
+                                    ? 'bg-teal-500 text-white border-teal-500 font-semibold'
                                     : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
                                 }`}
                               >
@@ -195,7 +188,7 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
                             placeholder="Notiz (optional)"
                             value={draft.note}
                             onChange={e => updateEntry(ex.id, { note: e.target.value })}
-                            className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
+                            className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300 bg-white"
                           />
                         </div>
                       )}
@@ -227,7 +220,7 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
         <button
           onClick={handleSave}
           disabled={!canSave}
-          className="flex-1 py-3 bg-amber-600 text-white text-sm font-semibold rounded-2xl disabled:opacity-40 active:scale-95 transition-transform"
+          className="flex-1 py-3 bg-teal-600 text-white text-sm font-semibold rounded-2xl disabled:opacity-40 active:scale-95 transition-transform"
         >
           {canSave
             ? `${Object.keys(selected).length} Übung${Object.keys(selected).length !== 1 ? 'en' : ''} speichern`

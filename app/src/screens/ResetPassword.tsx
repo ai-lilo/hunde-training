@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 interface Props {
@@ -39,7 +39,7 @@ export function ResetPassword({ onDone }: Props) {
           placeholder="Neues Passwort"
           required
           autoFocus
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
         />
         <input
           type="password"
@@ -47,13 +47,13 @@ export function ResetPassword({ onDone }: Props) {
           onChange={e => setConfirm(e.target.value)}
           placeholder="Passwort wiederholen"
           required
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={loading || !password || !confirm}
-          className="w-full py-3 bg-amber-600 text-white font-semibold rounded-xl disabled:opacity-50 active:scale-95 transition-transform"
+          className="w-full py-3 bg-teal-600 text-white font-semibold rounded-xl disabled:opacity-50 active:scale-95 transition-transform"
         >
           {loading ? 'Wird gespeichert…' : 'Passwort speichern'}
         </button>

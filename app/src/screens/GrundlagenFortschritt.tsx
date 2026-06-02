@@ -1,14 +1,16 @@
-import { useState, memo } from 'react'
+import { useState } from 'react'
 import type { Exercise, ExerciseOverride, ExerciseStatus, Level, LevelCriteria, Command } from '../data/types'
 import { CUSTOM_CRITERIA } from '../data/exercises'
 import { getStatusMap, levelIndex, nextLevel } from '../data/progression'
+import { LEVEL_LABEL, LEVEL_ORDER } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
+import { LevelTimeline } from '../components/LevelTimeline'
+import { CommandChip } from '../components/CommandChip'
 import { useSetExerciseLevel } from '../hooks/useExerciseProgress'
 import { useUpdateExerciseOverride, useUploadExercisePhoto, useUploadExerciseVideo } from '../hooks/useExerciseOverrides'
 import { useDeleteCustomExercise, useUpdateCustomExercise } from '../hooks/useCustomExercises'
 import { useAllExerciseCommands, useLinkCommand, useUnlinkCommand } from '../hooks/useExerciseCommands'
 import { useAllExerciseLevelHistory } from '../hooks/useExerciseLevelHistory'
-import type { LevelHistoryEntry } from '../hooks/useExerciseLevelHistory'
 
 const GL_CATEGORIES = [
   { key: 'gl_mindset' as const, label: 'Mindset' },
@@ -18,15 +20,6 @@ const GL_CATEGORIES = [
   { key: 'gl_platz'   as const, label: 'Platz' },
   { key: 'gl_steh'    as const, label: 'Steh' },
 ]
-
-const LEVEL_ORDER: Level[] = ['nicht_begonnen', 'aufbau', 'basis', 'stabil']
-const LEVEL_LABEL: Record<Level, string> = {
-  nicht_begonnen: 'Noch nicht begonnen',
-  aufbau: 'Aufbau',
-  basis: 'Basis',
-  stabil: 'Stabil',
-  pruefungsreif: 'Prüfungsreif',
-}
 
 interface AddFormState {
   name: string
@@ -54,38 +47,6 @@ interface Props {
   userId: string
   allCommands: Command[]
   onAddExercise: (fields: { name: string; category: Exercise['category']; description?: string; criteria?: LevelCriteria }) => void
-}
-
-// Lernkurve-Timeline — zeigt wann welches Level erreicht wurde
-const LevelTimeline = memo(function LevelTimeline({ history }: { history: LevelHistoryEntry[] }) {
-  if (history.length === 0) return null
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-xs font-medium text-stone-400 mb-0.5">Lernkurve</p>
-      <div className="flex flex-col gap-1.5 pl-1">
-        {history.map((entry, i) => (
-          <div key={i} className="flex items-center gap-2.5">
-            <div className="flex flex-col items-center">
-              <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
-              {i < history.length - 1 && <div className="w-px h-3 bg-amber-200" />}
-            </div>
-            <span className="text-xs text-stone-700 font-medium">{LEVEL_LABEL[entry.level]}</span>
-            <span className="text-xs text-stone-400 ml-auto">{new Date(entry.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-})
-
-// Kommando-Chip — ein verknüpftes Kommando mit Entfernen-Button
-function CommandChip({ name, onRemove }: { name: string; onRemove: () => void }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1">
-      {name}
-      <button onClick={onRemove} className="text-amber-400 hover:text-amber-600 ml-0.5 leading-none">×</button>
-    </span>
-  )
 }
 
 export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId, userId, allCommands, onAddExercise }: Props) {
@@ -211,7 +172,6 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
     if (!next) return
     setLevel.mutate({ exerciseId: ex.id, level: next })
     setShowResetFor(null)
-    // Level-Up-Animation
     setLevelUpId(ex.id)
     setTimeout(() => setLevelUpId(null), 2000)
   }
@@ -240,7 +200,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
               {addingTo !== cat.key && (
                 <button
                   onClick={() => { setAddingTo(cat.key); setAddForm(EMPTY_FORM) }}
-                  className="text-xs text-amber-600 border border-amber-200 rounded-lg px-2.5 py-1 active:bg-amber-50 transition-colors"
+                  className="text-xs text-teal-700 border border-teal-200 rounded-lg px-2.5 py-1 active:bg-teal-50 transition-colors"
                 >
                   + Übung
                 </button>
@@ -262,7 +222,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
 
                 if (editingId === ex.id && isCustom) {
                   return (
-                    <div key={ex.id} className="bg-white rounded-2xl shadow-sm border border-amber-200 p-4 flex flex-col gap-3">
+                    <div key={ex.id} className="bg-white rounded-xl shadow-sm border border-teal-200 p-4 flex flex-col gap-3">
                       <p className="text-sm font-semibold text-stone-700">Übung bearbeiten</p>
                       <input
                         autoFocus
@@ -270,14 +230,14 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                         value={editForm.name}
                         onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
                         placeholder="Name der Übung *"
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
                       />
                       <input
                         type="text"
                         value={editForm.description}
                         onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
                         placeholder="Beschreibung (optional)"
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
                       />
                       <div className="flex flex-col gap-2">
                         <p className="text-xs text-stone-400 font-medium">Level-Kriterien (optional)</p>
@@ -289,7 +249,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                               placeholder={CUSTOM_CRITERIA[l]}
                               value={editForm[l]}
                               onChange={e => setEditForm(f => ({ ...f, [l]: e.target.value }))}
-                              className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                              className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
                             />
                           </div>
                         ))}
@@ -298,7 +258,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                         <button
                           onClick={() => handleEditSubmit(ex)}
                           disabled={!editForm.name.trim()}
-                          className="flex-1 py-2 bg-amber-600 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
+                          className="flex-1 py-2 bg-teal-700 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
                         >
                           Speichern
                         </button>
@@ -314,8 +274,8 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                 }
 
                 return (
-                  <details key={ex.id} className={`bg-white rounded-2xl shadow-sm group ${isLevelUp ? 'ring-2 ring-green-400' : 'border border-stone-100'}`}>
-                    <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer list-none select-none active:bg-stone-50 rounded-2xl">
+                  <details key={ex.id} className={`bg-white rounded-xl shadow-sm group ${isLevelUp ? 'ring-2 ring-green-400' : 'border border-stone-100'}`}>
+                    <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer list-none select-none active:bg-stone-50 rounded-xl">
                       <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-sm font-semibold text-stone-800 truncate">{ex.name}</span>
@@ -340,7 +300,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                           {LEVEL_ORDER.map((l, i) => (
                             <div
                               key={l}
-                              className={`flex-1 h-1.5 rounded-full transition-colors ${i <= idx ? 'bg-amber-400' : 'bg-stone-100'}`}
+                              className={`flex-1 h-1.5 rounded-full transition-colors ${i <= idx ? 'bg-teal-400' : 'bg-stone-100'}`}
                             />
                           ))}
                         </div>
@@ -354,7 +314,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                         {next && !showResetFor && (
                           <button
                             onClick={() => handleNextLevel(ex, current)}
-                            className="w-full py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform"
+                            className="w-full py-2.5 bg-teal-700 text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform"
                           >
                             Nächste Stufe erreicht → {LEVEL_LABEL[next]}
                           </button>
@@ -388,7 +348,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                                   }}
                                   className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                                     current === l
-                                      ? 'bg-amber-500 text-white border-amber-500'
+                                      ? 'bg-teal-600 text-white border-teal-600'
                                       : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
                                   }`}
                                 >
@@ -408,9 +368,9 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
 
                       {/* Nächste Stufe Beschreibung */}
                       {next && !isLevelUp && (
-                        <div className="bg-amber-50 rounded-xl p-3">
-                          <p className="text-xs font-medium text-amber-700 mb-0.5">Ziel: {LEVEL_LABEL[next]}</p>
-                          <p className="text-xs text-amber-600">{ex.criteria[next]}</p>
+                        <div className="bg-teal-50 rounded-xl p-3">
+                          <p className="text-xs font-medium text-teal-700 mb-0.5">Ziel: {LEVEL_LABEL[next]}</p>
+                          <p className="text-xs text-teal-600">{ex.criteria[next]}</p>
                         </div>
                       )}
 
@@ -449,7 +409,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                                     <button
                                       key={cmd.id}
                                       onClick={() => handleLinkCommand(ex.id, cmd.id)}
-                                      className="text-left text-xs px-3 py-2 rounded-lg bg-stone-50 border border-stone-100 text-stone-700 active:bg-amber-50 active:border-amber-200"
+                                      className="text-left text-xs px-3 py-2 rounded-lg bg-stone-50 border border-stone-100 text-stone-700 active:bg-teal-50 active:border-teal-200"
                                     >
                                       <span className="font-medium">{cmd.name}</span>
                                       {cmd.description && <span className="text-stone-400"> — {cmd.description}</span>}
@@ -468,14 +428,14 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                           allCommands.length > 0 && (
                             <button
                               onClick={() => setShowCommandPickerFor(ex.id)}
-                              className="text-xs text-amber-600 border border-amber-200 rounded-lg px-2.5 py-1.5 self-start active:bg-amber-50"
+                              className="text-xs text-teal-700 border border-teal-200 rounded-lg px-2.5 py-1.5 self-start active:bg-teal-50"
                             >
                               + Kommando verknüpfen
                             </button>
                           )
                         )}
                         {allCommands.length === 0 && (
-                          <p className="text-xs text-stone-300 italic">Zuerst Kommandos anlegen (Tab „Kommandos")</p>
+                          <p className="text-xs text-stone-300 italic">Kommandos anlegen in den Einstellungen</p>
                         )}
                       </div>
 
@@ -547,7 +507,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                           value={notesValue}
                           onChange={e => setEditNotes(prev => ({ ...prev, [ex.id]: e.target.value }))}
                           onBlur={() => handleNotesSave(ex)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-stone-200 text-stone-700 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-stone-200 text-stone-700 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-300 resize-none"
                         />
                       </div>
 
@@ -595,7 +555,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
 
               {/* Inline-Formular für neue Übung */}
               {addingTo === cat.key && (
-                <div className="bg-white rounded-2xl shadow-sm border border-amber-200 p-4 flex flex-col gap-3">
+                <div className="bg-white rounded-xl shadow-sm border border-teal-200 p-4 flex flex-col gap-3">
                   <p className="text-sm font-semibold text-stone-700">Neue Übung — {cat.label}</p>
 
                   <input
@@ -604,7 +564,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                     placeholder="Name der Übung *"
                     value={addForm.name}
                     onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
                   />
 
                   <input
@@ -612,7 +572,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                     placeholder="Beschreibung (optional)"
                     value={addForm.description}
                     onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
                   />
 
                   <div className="flex flex-col gap-2">
@@ -625,7 +585,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                           placeholder={CUSTOM_CRITERIA[l]}
                           value={addForm[l]}
                           onChange={e => setAddForm(f => ({ ...f, [l]: e.target.value }))}
-                          className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                          className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300"
                         />
                       </div>
                     ))}
@@ -635,7 +595,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                     <button
                       onClick={() => handleAddSubmit(cat.key)}
                       disabled={!addForm.name.trim()}
-                      className="flex-1 py-2 bg-amber-600 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
+                      className="flex-1 py-2 bg-teal-700 text-white text-sm font-semibold rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
                     >
                       Speichern
                     </button>

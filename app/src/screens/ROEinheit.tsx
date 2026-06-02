@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import type { Level, ROSign, ROSignStatus } from '../data/types'
 import { RO_SIGNS } from '../data/ro-signs'
 import { LevelBadge } from '../components/LevelBadge'
@@ -137,7 +137,7 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
       </div>
 
       {selectedIds.length < 10 && eligibleCount > 0 && (
-        <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5 text-xs text-amber-700">
+        <div className="bg-teal-50 border border-teal-100 rounded-xl px-4 py-2.5 text-xs text-teal-700">
           Nur {eligibleCount} Schilder qualifiziert (Stabil/Prüfungsreif) — {selectedIds.length} vorgeschlagen.
         </div>
       )}
@@ -188,7 +188,7 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
                   onClick={() => setFeedback(prev => ({ ...prev, [id]: 'weiter' }))}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                     fb === 'weiter'
-                      ? 'bg-amber-100 text-amber-700 border-amber-300'
+                      ? 'bg-teal-100 text-teal-700 border-teal-300'
                       : 'bg-stone-50 text-stone-500 border-stone-200 active:bg-stone-100'
                   }`}
                 >
@@ -247,7 +247,7 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
         onClick={() => onSave(selectedIds, note, feedback)}
         className={`rounded-xl py-3.5 text-sm font-semibold transition-colors ${
           selectedIds.every(id => feedback[id] != null)
-            ? 'bg-amber-600 text-white active:bg-amber-700'
+            ? 'bg-teal-600 text-white active:bg-teal-700'
             : 'bg-stone-200 text-stone-400 cursor-not-allowed'
         }`}
       >
