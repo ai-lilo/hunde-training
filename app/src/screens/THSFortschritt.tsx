@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import type { ExerciseStatus, THSObstacleStatus, THSTimeRecord, Level } from '../data/types'
 import {
-  THS_GEHORSAM, THS_HINDERNISSE, THS_DISZIPLIN_INFO, KLASSE_LABEL, DISZIPLIN_LABEL,
+  THS_GEHORSAM, THS_HINDERNISSE, THS_DISZIPLIN_INFO, THS_DISZIPLIN_EXERCISE_ID, THS_DISZIPLIN_LEVELS,
+  KLASSE_LABEL, DISZIPLIN_LABEL,
   type THSKlasse, type THSDisziplin,
 } from '../data/ths-data'
 import { LEVEL_LABEL, LEVEL_ORDER } from '../data/labels'
@@ -185,6 +186,8 @@ export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userI
           <TimeDisziplinView
             discipline={tab}
             klasse={klasse}
+            level={(exerciseMap[THS_DISZIPLIN_EXERCISE_ID[tab]] ?? 'nicht_begonnen') as Level}
+            onLevelChange={l => setExerciseLevel.mutate({ exerciseId: THS_DISZIPLIN_EXERCISE_ID[tab], level: l })}
             times={times.filter(t => t.discipline === tab)}
             showForm={showTimeFormFor === tab}
             timeInput={timeInput}
@@ -261,12 +264,14 @@ export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userI
               })}
             </div>
 
-            {/* Gesamtzeit-Sektion */}
+            {/* Gesamtzeit + Level-Status */}
             <div className="mt-2 border-t border-stone-100 pt-4">
-              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Gesamtzeiten</p>
+              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Gesamtzeiten & Status</p>
               <TimeDisziplinView
                 discipline="hindernislauf"
                 klasse={klasse}
+                level={(exerciseMap[THS_DISZIPLIN_EXERCISE_ID['hindernislauf']] ?? 'nicht_begonnen') as Level}
+                onLevelChange={l => setExerciseLevel.mutate({ exerciseId: THS_DISZIPLIN_EXERCISE_ID['hindernislauf'], level: l })}
                 times={times.filter(t => t.discipline === 'hindernislauf')}
                 showForm={showTimeFormFor === 'hindernislauf'}
                 timeInput={timeInput}
@@ -299,6 +304,8 @@ export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userI
 interface TimeDisziplinViewProps {
   discipline: THSDisziplin
   klasse: THSKlasse
+  level: Level
+  onLevelChange: (l: Level) => void
   times: THSTimeRecord[]
   showForm: boolean
   timeInput: string
@@ -314,12 +321,15 @@ interface TimeDisziplinViewProps {
 }
 
 function TimeDisziplinView({
-  discipline, klasse, times, showForm,
+  discipline, klasse, level, onLevelChange, times, showForm,
   timeInput, timeNote, timeError,
   onOpenForm, onCloseForm, onTimeInputChange, onTimeNoteChange, onSubmit, onDelete,
   compact,
 }: TimeDisziplinViewProps) {
+  const [showLevelPicker, setShowLevelPicker] = useState(false)
   const bestTime = times.length > 0 ? Math.min(...times.map(t => t.timeSeconds)) : null
+  const thsLevelIdx = THS_DISZIPLIN_LEVELS.indexOf(level as typeof THS_DISZIPLIN_LEVELS[number])
+  const thsBars = THS_DISZIPLIN_LEVELS.filter(l => l !== 'nicht_begonnen')
 
   return (
     <div className="flex flex-col gap-3">
@@ -328,6 +338,44 @@ function TimeDisziplinView({
           {discipline !== 'hindernislauf' && THS_DISZIPLIN_INFO[discipline as 'huerdenlauf' | 'slalom'][klasse]}
         </p>
       )}
+
+      {/* Level-Status */}
+      <div className="bg-white rounded-xl border border-stone-100 shadow-sm">
+        <button
+          className="w-full flex items-center justify-between px-4 py-3 active:bg-stone-50 rounded-xl"
+          onClick={() => setShowLevelPicker(p => !p)}
+        >
+          <span className="text-sm font-semibold text-stone-700">Trainingsstand</span>
+          <div className="flex items-center gap-2">
+            <LevelBadge level={level} />
+            <span className={`text-stone-300 text-xs transition-transform ${showLevelPicker ? 'rotate-180' : ''}`}>▾</span>
+          </div>
+        </button>
+        {showLevelPicker && (
+          <div className="px-4 pb-4 border-t border-stone-50 pt-3">
+            <div className="flex gap-1 mb-3">
+              {thsBars.map((_, i) => (
+                <div key={i} className={`flex-1 h-1.5 rounded-full ${i < thsLevelIdx ? 'bg-teal-400' : 'bg-stone-100'}`} />
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {THS_DISZIPLIN_LEVELS.map(l => (
+                <button
+                  key={l}
+                  onClick={() => { onLevelChange(l as Level); setShowLevelPicker(false) }}
+                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                    level === l
+                      ? 'bg-teal-600 text-white border-teal-600'
+                      : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
+                  }`}
+                >
+                  {LEVEL_LABEL[l]}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Bestzeit */}
       {bestTime !== null && (

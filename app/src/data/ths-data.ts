@@ -62,7 +62,7 @@ export const THS_GEHORSAM: THSGehorsamUebung[] = [
 
 export const THS_HINDERNISSE: THSHindernis[] = [
   { id: 'ths-h-01', position: 1, name: 'Hürde',          massangabe: '50 cm' },
-  { id: 'ths-h-02', position: 2, name: 'Schrägwand',     massangabe: '0,80 m hoch · 1,50 m lang · 1,00 m breit' },
+  { id: 'ths-h-02', position: 2, name: 'Oxer',            massangabe: '0,80 m hoch · 1,50 m lang · 1,00 m breit' },
   { id: 'ths-h-03', position: 3, name: 'Tunnel',          massangabe: '3,50 m' },
   { id: 'ths-h-04', position: 4, name: 'Laufdiele',       massangabe: '4,50 m' },
   { id: 'ths-h-05', position: 5, name: 'Tonne',           massangabe: 'Ø 0,80 m' },
@@ -82,6 +82,16 @@ export const KLASSE_LABEL: Record<THSKlasse, string> = {
   k2: 'VK2',
   k3: 'VK3',
 }
+
+// Exercise-IDs für den Level-Status der Zeitdisziplinen (in exercise_progress gespeichert)
+export const THS_DISZIPLIN_EXERCISE_ID: Record<'huerdenlauf' | 'slalom' | 'hindernislauf', string> = {
+  huerdenlauf:   'ths-d-huerdenlauf',
+  slalom:        'ths-d-slalom',
+  hindernislauf: 'ths-d-hindernislauf',
+}
+
+// Nur 4 Stufen für THS-Zeitdisziplinen (kein Aufbau)
+export const THS_DISZIPLIN_LEVELS = ['nicht_begonnen', 'basis', 'stabil', 'pruefungsreif'] as const
 
 export const DISZIPLIN_LABEL: Record<THSDisziplin, string> = {
   gehorsam:      'Gehorsam',
