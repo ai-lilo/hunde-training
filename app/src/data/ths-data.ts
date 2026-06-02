@@ -93,6 +93,31 @@ export const THS_DISZIPLIN_EXERCISE_ID: Record<'huerdenlauf' | 'slalom' | 'hinde
 // Alle 5 Stufen für THS-Zeitdisziplinen
 export const THS_DISZIPLIN_LEVELS = ['nicht_begonnen', 'aufbau', 'basis', 'stabil', 'pruefungsreif'] as const
 
+// Berechnet die aktuelle Trainingsklasse automatisch aus dem Fortschritt.
+// Startet immer bei k1 und wechselt erst zur nächsten Klasse wenn alle
+// Disziplinen der aktuellen Klasse prüfungsreif sind.
+export function computeTHSKlasse(
+  exerciseMap: Record<string, string>,
+  obstacleMap: Record<string, string>
+): THSKlasse {
+  function isKlasseComplete(k: THSKlasse): boolean {
+    const gehorsamOk = THS_GEHORSAM
+      .filter(u => u.classes.includes(k))
+      .every(u => exerciseMap[u.id] === 'pruefungsreif')
+    const huerdeLaufOk  = exerciseMap[THS_DISZIPLIN_EXERCISE_ID.huerdenlauf]   === 'pruefungsreif'
+    const slalomOk      = exerciseMap[THS_DISZIPLIN_EXERCISE_ID.slalom]         === 'pruefungsreif'
+    const hindernisOk   = exerciseMap[THS_DISZIPLIN_EXERCISE_ID.hindernislauf]  === 'pruefungsreif'
+    const obstaclesOk   = THS_HINDERNISSE.every(h => obstacleMap[h.id] === 'pruefungsreif')
+    return gehorsamOk && huerdeLaufOk && slalomOk && hindernisOk && obstaclesOk
+  }
+
+  if (isKlasseComplete('k1')) {
+    if (isKlasseComplete('k2')) return 'k3'
+    return 'k2'
+  }
+  return 'k1'
+}
+
 export const DISZIPLIN_LABEL: Record<THSDisziplin, string> = {
   gehorsam:      'Gehorsam',
   huerdenlauf:   'Hürdenlauf',

@@ -312,6 +312,7 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
             {thsScreen === 'ths-einheit' && (
               <THSEinheit
                 statuses={exerciseStatuses}
+                obstacleStatuses={thsObstacleStatuses}
                 dogId={dogId}
                 userId={userId}
                 thsSportId={thsSportId}

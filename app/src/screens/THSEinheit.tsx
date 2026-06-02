@@ -1,16 +1,13 @@
 import { useState } from 'react'
-import type { ExerciseStatus, Level } from '../data/types'
-import { THS_GEHORSAM, THS_HINDERNISSE, KLASSE_LABEL, type THSKlasse } from '../data/ths-data'
+import type { ExerciseStatus, Level, THSObstacleStatus } from '../data/types'
+import { THS_GEHORSAM, THS_HINDERNISSE, KLASSE_LABEL, computeTHSKlasse, type THSKlasse } from '../data/ths-data'
 import { LEVEL_LABEL, LEVEL_ORDER } from '../data/labels'
 import { useAddTHSSession } from '../hooks/useSessions'
 import { useAddTHSTime, parseTimeInput } from '../hooks/useTHSTimes'
 
-function getKlasse(dogId: string): THSKlasse {
-  return (localStorage.getItem(`ths_klasse_${dogId}`) as THSKlasse) ?? 'k1'
-}
-
 interface Props {
   statuses: ExerciseStatus[]
+  obstacleStatuses: THSObstacleStatus[]
   dogId: string
   userId: string
   thsSportId: string
@@ -20,8 +17,10 @@ interface Props {
 
 type DisziplinKey = 'gehorsam' | 'huerdenlauf' | 'slalom' | 'hindernislauf'
 
-export function THSEinheit({ statuses, dogId, userId, thsSportId, onSave, onCancel }: Props) {
-  const klasse = getKlasse(dogId)
+export function THSEinheit({ statuses, obstacleStatuses, dogId, userId, thsSportId, onSave, onCancel }: Props) {
+  const exerciseMap = Object.fromEntries(statuses.map(s => [s.exerciseId, s.level]))
+  const obstacleMap = Object.fromEntries(obstacleStatuses.map(s => [s.obstacleId, s.level]))
+  const klasse: THSKlasse = computeTHSKlasse(exerciseMap, obstacleMap)
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [selectedDisziplinen, setSelectedDisziplinen] = useState<Set<DisziplinKey>>(new Set())
   const [note, setNote] = useState('')

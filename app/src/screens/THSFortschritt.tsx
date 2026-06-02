@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import type { ExerciseStatus, THSObstacleStatus, THSTimeRecord, Level } from '../data/types'
 import {
   THS_GEHORSAM, THS_HINDERNISSE, THS_DISZIPLIN_INFO, THS_DISZIPLIN_EXERCISE_ID, THS_DISZIPLIN_LEVELS,
-  KLASSE_LABEL, DISZIPLIN_LABEL,
+  KLASSE_LABEL, DISZIPLIN_LABEL, computeTHSKlasse,
   type THSKlasse, type THSDisziplin,
 } from '../data/ths-data'
 import { LEVEL_LABEL, LEVEL_ORDER } from '../data/labels'
@@ -13,13 +13,6 @@ import { useAddTHSTime, useDeleteTHSTime, formatTime, parseTimeInput } from '../
 import { levelIndex } from '../data/progression'
 
 const DISZIPLINEN: THSDisziplin[] = ['gehorsam', 'huerdenlauf', 'slalom', 'hindernislauf']
-
-function getKlasse(dogId: string): THSKlasse {
-  return (localStorage.getItem(`ths_klasse_${dogId}`) as THSKlasse) ?? 'k1'
-}
-function setKlasse(dogId: string, k: THSKlasse) {
-  localStorage.setItem(`ths_klasse_${dogId}`, k)
-}
 
 interface Props {
   statuses: ExerciseStatus[]
@@ -32,7 +25,6 @@ interface Props {
 
 export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userId, onNavigateToEinheit }: Props) {
   const [tab, setTab] = useState<THSDisziplin>('gehorsam')
-  const [klasse, setKlasseState] = useState<THSKlasse>(() => getKlasse(dogId))
   const [editLevelFor, setEditLevelFor] = useState<string | null>(null)
   const [showTimeFormFor, setShowTimeFormFor] = useState<THSDisziplin | null>(null)
   const [timeInput, setTimeInput] = useState('')
@@ -53,10 +45,10 @@ export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userI
     [obstacleStatuses]
   )
 
-  function handleKlasseChange(k: THSKlasse) {
-    setKlasseState(k)
-    setKlasse(dogId, k)
-  }
+  const klasse: THSKlasse = useMemo(
+    () => computeTHSKlasse(exerciseMap, obstacleMap),
+    [exerciseMap, obstacleMap]
+  )
 
   function handleTimeSubmit(discipline: THSDisziplin) {
     const secs = parseTimeInput(timeInput)
@@ -83,21 +75,24 @@ export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userI
         <p className="text-sm text-stone-500 mt-0.5">Vierkampf · {KLASSE_LABEL[klasse]}</p>
       </div>
 
-      {/* Klassen-Selector */}
-      <div className="flex gap-2 px-4 mb-4">
-        {(['k1', 'k2', 'k3'] as THSKlasse[]).map(k => (
-          <button
-            key={k}
-            onClick={() => handleKlasseChange(k)}
-            className={`flex-1 py-2 text-sm font-semibold rounded-xl border transition-colors ${
-              klasse === k
-                ? 'bg-teal-700 text-white border-teal-700'
-                : 'bg-white text-stone-500 border-stone-200 active:bg-stone-50'
-            }`}
-          >
-            {KLASSE_LABEL[k]}
-          </button>
-        ))}
+      {/* Klassen-Anzeige (automatisch berechnet) */}
+      <div className="flex items-center gap-2 px-4 mb-4">
+        {(['k1', 'k2', 'k3'] as THSKlasse[]).map((k, i) => {
+          const isActive = k === klasse
+          const isPassed = ['k1', 'k2', 'k3'].indexOf(k) < ['k1', 'k2', 'k3'].indexOf(klasse)
+          return (
+            <div key={k} className="flex items-center gap-2 flex-1">
+              <div className={`flex-1 py-2 text-sm font-semibold rounded-xl border text-center ${
+                isActive  ? 'bg-teal-700 text-white border-teal-700' :
+                isPassed  ? 'bg-teal-100 text-teal-600 border-teal-200' :
+                            'bg-white text-stone-300 border-stone-200'
+              }`}>
+                {isPassed ? '✓ ' : ''}{KLASSE_LABEL[k]}
+              </div>
+              {i < 2 && <span className="text-stone-300 text-xs">→</span>}
+            </div>
+          )
+        })}
       </div>
 
       {/* Disziplin-Tabs */}
