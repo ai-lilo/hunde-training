@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import { buildAllExercises } from './data/exercises'
 import { Dashboard } from './screens/Dashboard'
 import { LogSession } from './screens/LogSession'
@@ -129,6 +129,20 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
 
   const [sport, setSport] = useState<Sport>(hasBH ? 'bh' : 'ro')
 
+  const sportTabs: { id: Sport; label: string }[] = [
+    { id: 'grundlagen', label: 'Grundlagen' },
+    ...(hasBH ? [{ id: 'bh' as Sport, label: 'BH' }] : []),
+    ...(hasRO ? [{ id: 'ro' as Sport, label: 'RO' }] : []),
+    ...(hasTHS ? [{ id: 'ths' as Sport, label: 'THS' }] : []),
+  ]
+
+  // Wenn die aktive Sportart nicht mehr im Tab-Set ist, auf erste verfügbare wechseln
+  useEffect(() => {
+    if (sportTabs.length > 0 && !sportTabs.find(t => t.id === sport)) {
+      setSport(sportTabs[0].id)
+    }
+  }, [hasBH, hasRO, hasTHS, sport]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (builtinLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -181,13 +195,6 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
   }
 
   const currentNavId = sport === 'bh' ? bhScreen : sport === 'ro' ? roScreen : sport === 'ths' ? thsScreen : glScreen
-
-  const sportTabs: { id: Sport; label: string }[] = [
-    { id: 'grundlagen', label: 'Grundlagen' },
-    ...(hasBH ? [{ id: 'bh' as Sport, label: 'BH' }] : []),
-    ...(hasRO ? [{ id: 'ro' as Sport, label: 'RO' }] : []),
-    ...(hasTHS ? [{ id: 'ths' as Sport, label: 'THS' }] : []),
-  ]
 
   return (
     <div className="flex flex-col h-full">

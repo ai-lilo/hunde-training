@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAllSports, useUserSports, useSaveUserSports } from '../hooks/useUserSports'
 import { useProfile, useUpdateProfile } from '../hooks/useProfile'
 import { useCommands, useAddCommand, useUpdateCommand, useDeleteCommand } from '../hooks/useCommands'
@@ -31,6 +32,7 @@ export function Einstellungen({ userId, onClose }: Props) {
   const { data: userSportSlugs = [] } = useUserSports(userId)
   const { data: profile } = useProfile(userId)
   const { data: commands = [] } = useCommands(userId)
+  const qc = useQueryClient()
   const saveSports = useSaveUserSports()
   const updateProfile = useUpdateProfile()
   const addCommand = useAddCommand(userId)
@@ -58,14 +60,18 @@ export function Einstellungen({ userId, onClose }: Props) {
   const toggleSport = (id: string) => {
     setSelectedIds(prev => {
       const current = prev ?? computedIds
-      return current.includes(id) ? current.filter(s => s !== id) : [...current, id]
+      const next = current.includes(id) ? current.filter(s => s !== id) : [...current, id]
+      // Sofort speichern — kein separater "Speichern"-Klick nötig
+      saveSports.mutate({ userId, sportIds: next }, {
+        onSuccess: () => qc.invalidateQueries({ queryKey: ['user-sports', userId] }),
+      })
+      return next
     })
   }
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      await saveSports.mutateAsync({ userId, sportIds: activeIds })
       await updateProfile.mutateAsync({ id: userId, display_name: activeName.trim() || null })
       onClose()
     } finally {
