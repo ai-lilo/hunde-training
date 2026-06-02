@@ -66,9 +66,10 @@ interface Props {
   dogId: string
   dog: Dog
   userId: string
+  onSwitchDog: () => void
 }
 
-export default function MainApp({ dogId, dog, userId }: Props) {
+export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
   const [bhScreen, setBhScreen] = useState<BHScreen>('dashboard')
   const [roScreen, setRoScreen] = useState<ROScreen>('ro-fortschritt')
   const [glScreen, setGlScreen] = useState<GLScreen>('gl-fortschritt')
@@ -177,10 +178,7 @@ export default function MainApp({ dogId, dog, userId }: Props) {
       {/* Sport-Tabs */}
       <div className="flex-shrink-0 bg-white border-b border-stone-100 flex" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <button
-          onClick={async () => {
-            localStorage.removeItem('active_dog_id')
-            window.location.reload()
-          }}
+          onClick={onSwitchDog}
           className="px-3 py-3 text-stone-400 text-sm flex-shrink-0"
           title="Hund wechseln"
         >

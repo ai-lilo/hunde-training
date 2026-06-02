@@ -104,7 +104,10 @@ export function Einstellungen({ userId, onClose }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white border-b border-stone-100">
+      <div
+        className="flex-shrink-0 flex items-center gap-3 px-4 pb-3 bg-white border-b border-stone-100"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+      >
         <button
           onClick={onClose}
           className="text-stone-400 text-sm font-medium active:scale-95 transition-transform"

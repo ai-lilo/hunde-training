@@ -26,6 +26,7 @@ const DEV_DOG: Dog = {
 export function AppShell() {
   const { user, loading: authLoading, isRecovery } = useAuth()
   const [devBypass, setDevBypass] = useState(false)
+  const [showDogSelector, setShowDogSelector] = useState(false)
 
   // Supabase leitet bei Fehler auf Root mit #error=... um (z.B. abgelaufener Magic Link)
   const [authError, setAuthError] = useState<string | null>(() => {
@@ -57,7 +58,7 @@ export function AppShell() {
 
   // Dev-Bypass (nur localhost, keine echte Auth nötig)
   if (import.meta.env.DEV && devBypass) {
-    return <MainApp dogId={DEV_DOG.id} dog={DEV_DOG} userId={DEV_DOG.owner_id} />
+    return <MainApp dogId={DEV_DOG.id} dog={DEV_DOG} userId={DEV_DOG.owner_id} onSwitchDog={() => {}} />
   }
 
   // Auth-Fehler (z.B. abgelaufener Magic Link)
@@ -113,6 +114,11 @@ export function AppShell() {
     )
   }
 
+  // Explizit Hund-Auswahl angefordert (z.B. via 🐕-Button)
+  if (showDogSelector) {
+    return <DogSelector onSelect={(id) => { setDogId(id); setShowDogSelector(false) }} />
+  }
+
   // Kein Hund ausgewählt oder ausgewählter Hund existiert nicht mehr
   const validDog = dogs.find(d => d.id === dogId)
   if (!validDog) {
@@ -124,5 +130,5 @@ export function AppShell() {
     return <DogSelector onSelect={setDogId} />
   }
 
-  return <MainApp dogId={validDog.id} dog={validDog} userId={user.id} />
+  return <MainApp dogId={validDog.id} dog={validDog} userId={user.id} onSwitchDog={() => setShowDogSelector(true)} />
 }
