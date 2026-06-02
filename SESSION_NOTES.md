@@ -1,5 +1,38 @@
 # Session-Notizen — Hundetraining App
 
+## 2026-06-02 — Session-Abschluss (Equipment HSV – Anleitungen-Bugfixes)
+
+> Diese Session fand ausschließlich im Equipment_HSV-Projekt statt.
+
+### Was wurde erledigt (Equipment_HSV)
+
+**Bug: Fotos in Anleitungen wurden nicht gespeichert**
+- Ursache 1: `instruction-media` Storage-Bucket hatte keine RLS-Policies → Uploads schlugen still fehl
+  - Fix: `supabase_storage_policies.sql` um drei Policies für `instruction-media` (INSERT/UPDATE/DELETE) ergänzt
+  - Manuell auszuführen: Supabase Dashboard → Storage → Bucket `instruction-media` als Public anlegen, dann SQL ausführen
+- Ursache 2: `uploadMedia()` gab `null` bei Fehler zurück, `saveInstruction()` ignorierte das und meldete Erfolg
+  - Fix: Rückgabetyp auf `{ url, error }` geändert; Upload-Fehler wird jetzt als Fehlermeldung an den User zurückgegeben (`useInstructions.ts`)
+
+**Feature: Lösch-Bestätigung für Anleitungsschritte**
+- Schritte mit Inhalt (Text oder Foto/Video) fragen nun per `ConfirmDialog` nach Bestätigung vor dem Löschen
+- Leere Schritte werden weiterhin sofort gelöscht (kein Dialog)
+- `InstructionForm.tsx`: Import + State `confirmDeleteIndex` + angepasster Button-Handler + Dialog-Render
+
+### Offene TODOs
+- **Equipment HSV – Supabase Storage-Bucket**: `instruction-media`-Bucket muss manuell als Public angelegt und SQL aus `supabase_storage_policies.sql` ausgeführt werden
+- **Hundetraining – DB-Migration ausstehend**: `supabase/add_commands_and_video.sql` muss im Supabase SQL Editor ausgeführt werden — ohne diese Migration fehlt die `commands`-Tabelle und das Kommandos-Feature funktioniert nicht in Produktion
+
+### Nächster sinnvoller Schritt
+**Supabase-Migration für Kommandos ausführen, dann Kommandos-Feature mit Aris Trainingsdaten befüllen**
+
+Details:
+- Supabase SQL Editor → `supabase/add_commands_and_video.sql` ausführen (legt `commands`-Tabelle + Video-Felder an)
+- Danach: Kommandos-Screen in der App öffnen und erste Kommandos für Ari anlegen (Sitz, Platz, Bleib, Fuß, Hier)
+- BH-relevante Kommandos priorisieren: Leinenführigkeit, Freifolge, Unterordnung (Sitz/Platz/Steh aus der Bewegung)
+- Lernkurven-Feature nutzen: für jede Übung Schwierigkeitsstufen dokumentieren um Fortschritt in Richtung BH-Prüfung sichtbar zu machen
+
+---
+
 ## 2026-05-26 — Session-Abschluss (Equipment HSV – 4 UI-Features + Performance)
 
 > Diese Session fand ausschließlich im Equipment_HSV-Projekt statt.
