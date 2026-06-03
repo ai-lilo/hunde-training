@@ -4,6 +4,7 @@ import { getBhProgress, getStatusMap, levelIndex } from '../data/progression'
 import { CATEGORY_LABEL } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
 import { WochenPlan } from '../components/WochenPlan'
+import { BHAuswertung } from '../components/BHAuswertung'
 import type { RecentSave } from '../App'
 import type { Dog } from '../hooks/useDogs'
 
@@ -111,6 +112,9 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
         <p className="text-xs text-stone-400 mt-1.5">{percent}% der Übungen prüfungsreif</p>
       </div>
 
+      {/* Trainingsauswertung */}
+      <BHAuswertung sessions={sessions} allExercises={allExercises} />
+
       {/* Smarte Wochenplanung */}
       <WochenPlan
         statuses={statuses}
@@ -134,9 +138,8 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
                   s => s.exerciseId === e.id && levelIndex(s.levelAfter) > levelIndex(s.levelBefore)
                 )
                 return (
-                  <button
+                  <div
                     key={e.id}
-                    onClick={() => onNavigate('fortschritt')}
                     className="flex items-center justify-between"
                   >
                     <span className={`text-sm ${justChanged ? 'text-green-700 font-semibold' : 'text-stone-700'}`}>
@@ -144,7 +147,7 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
                       {justChanged && <span className="ml-1 text-xs text-green-500">↑</span>}
                     </span>
                     <LevelBadge level={map[e.id] ?? 'nicht_begonnen'} />
-                  </button>
+                  </div>
                 )
               })}
             </div>
@@ -152,13 +155,6 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
         )
       })}
 
-      {/* Trainingseinheit starten */}
-      <button
-        onClick={() => onNavigate('einheit')}
-        className="w-full py-3.5 bg-teal-600 text-white text-sm font-semibold rounded-2xl shadow-sm active:scale-95 transition-transform"
-      >
-        + Neue Trainingseinheit
-      </button>
     </div>
   )
 }

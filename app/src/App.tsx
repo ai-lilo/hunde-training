@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import { buildAllExercises } from './data/exercises'
 import { Dashboard } from './screens/Dashboard'
 import { LogSession } from './screens/LogSession'
-import { Progress } from './screens/Progress'
 import { GrundlagenFortschritt } from './screens/GrundlagenFortschritt'
 import { GrundlagenEinheit } from './screens/GrundlagenEinheit'
 import { Einstellungen } from './screens/Einstellungen'
@@ -27,8 +26,8 @@ import { useROSignProgress, useSetROSignLevel } from './hooks/useROSignProgress'
 import { useSessions, useAddBHSession, useAddROSession, useDeleteSession } from './hooks/useSessions'
 import { useBuiltinExercises } from './hooks/useBuiltinExercises'
 import { useCustomExercises, useAddCustomExercise } from './hooks/useCustomExercises'
-import { useExerciseOverrides, useUpdateExerciseOverride } from './hooks/useExerciseOverrides'
-import { useHiddenExercises, useHideExercise } from './hooks/useHiddenExercises'
+import { useExerciseOverrides } from './hooks/useExerciseOverrides'
+import { useHiddenExercises } from './hooks/useHiddenExercises'
 import { useUserSports, useAllSports } from './hooks/useUserSports'
 import { useCommands } from './hooks/useCommands'
 import { useTHSObstacleProgress } from './hooks/useTHSObstacleProgress'
@@ -36,9 +35,9 @@ import { useTHSTimes } from './hooks/useTHSTimes'
 import type { Dog } from './hooks/useDogs'
 import type { Exercise, Level, ExerciseOverride, LevelCriteria, Sport } from './data/types'
 
-type BHScreen = 'dashboard' | 'fortschritt' | 'tagebuch' | 'einheit'
+type BHScreen = 'dashboard' | 'tagebuch' | 'einheit'
 type ROScreen = 'ro-fortschritt' | 'ro-einheit' | 'ro-tagebuch'
-type GLScreen = 'gl-fortschritt' | 'gl-einheit'
+type GLScreen = 'gl-fortschritt' | 'gl-einheit' | 'gl-tagebuch'
 type THSScreen = 'ths-fortschritt' | 'ths-einheit' | 'ths-tagebuch'
 
 export interface RecentSave {
@@ -50,26 +49,27 @@ export interface RecentSave {
 }
 
 const BH_NAV: { id: BHScreen; label: string; icon: string }[] = [
-  { id: 'dashboard',   label: 'Übersicht',   icon: '🏠' },
-  { id: 'fortschritt', label: 'Fortschritt', icon: '📈' },
-  { id: 'tagebuch',    label: 'Tagebuch',    icon: '📔' },
+  { id: 'dashboard', label: 'Übersicht', icon: '📋' },
+  { id: 'einheit',   label: 'Einheit',   icon: '▶️' },
+  { id: 'tagebuch',  label: 'Tagebuch',  icon: '📔' },
 ]
 
 const RO_NAV: { id: ROScreen; label: string; icon: string }[] = [
-  { id: 'ro-fortschritt', label: 'Schilder',  icon: '📋' },
+  { id: 'ro-fortschritt', label: 'Übersicht', icon: '📋' },
   { id: 'ro-einheit',     label: 'Einheit',   icon: '▶️' },
   { id: 'ro-tagebuch',    label: 'Tagebuch',  icon: '📔' },
 ]
 
 const GL_NAV: { id: GLScreen; label: string; icon: string }[] = [
-  { id: 'gl-fortschritt', label: 'Fortschritt',     icon: '📈' },
-  { id: 'gl-einheit',     label: 'Schnell-Einheit', icon: '⚡' },
+  { id: 'gl-fortschritt', label: 'Übersicht', icon: '📋' },
+  { id: 'gl-einheit',     label: 'Einheit',   icon: '▶️' },
+  { id: 'gl-tagebuch',    label: 'Tagebuch',  icon: '📔' },
 ]
 
 const THS_NAV: { id: THSScreen; label: string; icon: string }[] = [
-  { id: 'ths-fortschritt', label: 'Fortschritt', icon: '📈' },
-  { id: 'ths-einheit',     label: 'Einheit',     icon: '▶️' },
-  { id: 'ths-tagebuch',    label: 'Tagebuch',    icon: '📔' },
+  { id: 'ths-fortschritt', label: 'Übersicht', icon: '📋' },
+  { id: 'ths-einheit',     label: 'Einheit',   icon: '▶️' },
+  { id: 'ths-tagebuch',    label: 'Tagebuch',  icon: '📔' },
 ]
 
 interface Props {
@@ -112,8 +112,6 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
   const addROSession = useAddROSession(dogId, userId)
   const deleteSession = useDeleteSession(dogId)
   const addCustomExercise = useAddCustomExercise(dogId, userId)
-  const updateExerciseOverride = useUpdateExerciseOverride(userId)
-  const hideExercise = useHideExercise(userId, allExercises)
 
   // Sport-IDs aus der Sports-Tabelle auflösen
   const bhSportId = allSports.find(s => s.slug === 'bh')?.id ?? ''
@@ -155,43 +153,8 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
     return <Einstellungen userId={userId} onClose={() => setShowSettings(false)} />
   }
 
-  const handleUpdateExercise = (id: string, changes: ExerciseOverride) => {
-    updateExerciseOverride.mutate({ exerciseId: id, changes })
-  }
-
-  const handleDeleteExercise = (id: string) => {
-    hideExercise.mutate(id)
-  }
-
   const handleAddCustomExercise = (fields: { name: string; category: Exercise['category']; description?: string; criteria?: LevelCriteria }) => {
     addCustomExercise.mutate(fields)
-  }
-
-  // BH LogSession full-screen
-  if (sport === 'bh' && bhScreen === 'einheit') {
-    return (
-      <div className="flex flex-col h-full overflow-hidden">
-        <LogSession
-          statuses={exerciseStatuses}
-          allExercises={allExercises}
-          onAddCustomExercise={handleAddCustomExercise}
-          onSave={(entries, note, date) => {
-            const prevMap = getStatusMap(exerciseStatuses, allExercises)
-            const saveInfo: RecentSave[] = entries.map(e => ({
-              exerciseId: e.exerciseId,
-              levelBefore: prevMap[e.exerciseId] ?? 'nicht_begonnen',
-              levelAfter: e.levelAfter,
-              rating: e.rating,
-              note: e.note,
-            }))
-            addBHSession.mutate({ entries, generalNote: note, date, sportId: bhSportId })
-            setRecentSave(saveInfo)
-            setBhScreen('dashboard')
-          }}
-          onCancel={() => setBhScreen('dashboard')}
-        />
-      </div>
-    )
   }
 
   const currentNavId = sport === 'bh' ? bhScreen : sport === 'ro' ? roScreen : sport === 'ths' ? thsScreen : glScreen
@@ -246,16 +209,25 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
                 onNavigate={s => setBhScreen(s as BHScreen)}
               />
             )}
-            {bhScreen === 'fortschritt' && (
-              <Progress
+            {bhScreen === 'einheit' && (
+              <LogSession
                 statuses={exerciseStatuses}
                 allExercises={allExercises}
-                sessions={sessions.filter(s => s.sport === 'bh' || !s.sport)}
-                dogId={dogId}
-                userId={userId}
-                allCommands={commands}
-                onUpdateExercise={handleUpdateExercise}
-                onDeleteExercise={handleDeleteExercise}
+                onAddCustomExercise={handleAddCustomExercise}
+                onSave={(entries, note, date) => {
+                  const prevMap = getStatusMap(exerciseStatuses, allExercises)
+                  const saveInfo: RecentSave[] = entries.map(e => ({
+                    exerciseId: e.exerciseId,
+                    levelBefore: prevMap[e.exerciseId] ?? 'nicht_begonnen',
+                    levelAfter: e.levelAfter,
+                    rating: e.rating,
+                    note: e.note,
+                  }))
+                  addBHSession.mutate({ entries, generalNote: note, date, sportId: bhSportId })
+                  setRecentSave(saveInfo)
+                  setBhScreen('dashboard')
+                }}
+                onCancel={() => setBhScreen('dashboard')}
               />
             )}
             {bhScreen === 'tagebuch' && (
@@ -271,7 +243,7 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
         )}
 
         {sport === 'grundlagen' && (
-          <>
+          <Suspense fallback={<ScreenLoader />}>
             {glScreen === 'gl-fortschritt' && (
               <GrundlagenFortschritt
                 statuses={exerciseStatuses}
@@ -294,7 +266,14 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
                 onCancel={() => setGlScreen('gl-fortschritt')}
               />
             )}
-          </>
+            {glScreen === 'gl-tagebuch' && (
+              <Tagebuch
+                sessions={sessions.filter(s => s.sport === 'grundlagen')}
+                allExercises={allExercises}
+                onDeleteSession={id => deleteSession.mutate(id)}
+              />
+            )}
+          </Suspense>
         )}
 
         {sport === 'ths' && (

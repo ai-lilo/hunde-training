@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { useProfile } from './hooks/useProfile'
 import { useActiveDog } from './hooks/useActiveDog'
@@ -46,6 +46,13 @@ export function AppShell() {
   const { data: profile, isLoading: profileLoading } = useProfile(user?.id)
   const { dogId, setDogId } = useActiveDog()
   const { data: dogs = [], isLoading: dogsLoading } = useDogs()
+
+  // Einzigen Hund automatisch auswählen — als Effect, nicht im Render
+  useEffect(() => {
+    if (!dogsLoading && !dogId && dogs.length === 1) {
+      setDogId(dogs[0].id)
+    }
+  }, [dogsLoading, dogId, dogs, setDogId])
 
   // Loading-Splash
   if (authLoading || (user && profileLoading)) {
@@ -122,10 +129,13 @@ export function AppShell() {
   // Kein Hund ausgewählt oder ausgewählter Hund existiert nicht mehr
   const validDog = dogs.find(d => d.id === dogId)
   if (!validDog) {
-    // Einzigen Hund automatisch auswählen (z.B. nach PWA-Neuinstallation)
-    if (dogs.length === 1) {
-      setDogId(dogs[0].id)
-      return null
+    // Spinner während automatischer Auswahl (Effect läuft gleich)
+    if (!dogsLoading && dogs.length === 1) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )
     }
     return <DogSelector onSelect={setDogId} />
   }

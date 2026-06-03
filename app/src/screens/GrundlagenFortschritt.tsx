@@ -6,7 +6,6 @@ import { LEVEL_LABEL, LEVEL_ORDER } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
 import { LevelTimeline } from '../components/LevelTimeline'
 import { CommandChip } from '../components/CommandChip'
-import { useSetExerciseLevel } from '../hooks/useExerciseProgress'
 import { useUpdateExerciseOverride, useUploadExercisePhoto, useUploadExerciseVideo } from '../hooks/useExerciseOverrides'
 import { useDeleteCustomExercise, useUpdateCustomExercise } from '../hooks/useCustomExercises'
 import { useAllExerciseCommands, useLinkCommand, useUnlinkCommand } from '../hooks/useExerciseCommands'
@@ -27,6 +26,7 @@ interface AddFormState {
   aufbau: string
   basis: string
   stabil: string
+  pruefungsreif: string
 }
 
 interface EditFormState {
@@ -35,9 +35,10 @@ interface EditFormState {
   aufbau: string
   basis: string
   stabil: string
+  pruefungsreif: string
 }
 
-const EMPTY_FORM: AddFormState = { name: '', description: '', aufbau: '', basis: '', stabil: '' }
+const EMPTY_FORM: AddFormState = { name: '', description: '', aufbau: '', basis: '', stabil: '', pruefungsreif: '' }
 
 interface Props {
   statuses: ExerciseStatus[]
@@ -58,11 +59,8 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<EditFormState>(EMPTY_FORM)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const [showResetFor, setShowResetFor] = useState<string | null>(null)
   const [showCommandPickerFor, setShowCommandPickerFor] = useState<string | null>(null)
-  const [levelUpId, setLevelUpId] = useState<string | null>(null)
 
-  const setLevel = useSetExerciseLevel(dogId, userId)
   const updateOverride = useUpdateExerciseOverride(userId)
   const uploadPhoto = useUploadExercisePhoto(userId)
   const uploadVideo = useUploadExerciseVideo(userId)
@@ -79,13 +77,13 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
 
   function handleAddSubmit(categoryKey: string) {
     if (!addForm.name.trim()) return
-    const hasCriteria = addForm.aufbau || addForm.basis || addForm.stabil
+    const hasCriteria = addForm.aufbau || addForm.basis || addForm.stabil || addForm.pruefungsreif
     const criteria: LevelCriteria | undefined = hasCriteria ? {
       nicht_begonnen: CUSTOM_CRITERIA.nicht_begonnen,
       aufbau: addForm.aufbau || CUSTOM_CRITERIA.aufbau,
       basis: addForm.basis || CUSTOM_CRITERIA.basis,
       stabil: addForm.stabil || CUSTOM_CRITERIA.stabil,
-      pruefungsreif: CUSTOM_CRITERIA.pruefungsreif,
+      pruefungsreif: addForm.pruefungsreif || CUSTOM_CRITERIA.pruefungsreif,
     } : undefined
     onAddExercise({
       name: addForm.name.trim(),
@@ -98,26 +96,27 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
   }
 
   function handleEditStart(ex: Exercise) {
-    const criteria = ex.criteria
+    const criteria = ex.criteria ?? {}
     setEditForm({
       name: ex.name,
       description: ex.description ?? '',
-      aufbau: criteria.aufbau !== CUSTOM_CRITERIA.aufbau ? criteria.aufbau : '',
-      basis: criteria.basis !== CUSTOM_CRITERIA.basis ? criteria.basis : '',
-      stabil: criteria.stabil !== CUSTOM_CRITERIA.stabil ? criteria.stabil : '',
+      aufbau: criteria.aufbau && criteria.aufbau !== CUSTOM_CRITERIA.aufbau ? criteria.aufbau : '',
+      basis: criteria.basis && criteria.basis !== CUSTOM_CRITERIA.basis ? criteria.basis : '',
+      stabil: criteria.stabil && criteria.stabil !== CUSTOM_CRITERIA.stabil ? criteria.stabil : '',
+      pruefungsreif: criteria.pruefungsreif && criteria.pruefungsreif !== CUSTOM_CRITERIA.pruefungsreif ? criteria.pruefungsreif : '',
     })
     setEditingId(ex.id)
   }
 
   function handleEditSubmit(ex: Exercise) {
     if (!editForm.name.trim()) return
-    const hasCriteria = editForm.aufbau || editForm.basis || editForm.stabil
+    const hasCriteria = editForm.aufbau || editForm.basis || editForm.stabil || editForm.pruefungsreif
     const criteria: LevelCriteria | undefined = hasCriteria ? {
       nicht_begonnen: CUSTOM_CRITERIA.nicht_begonnen,
       aufbau: editForm.aufbau || CUSTOM_CRITERIA.aufbau,
       basis: editForm.basis || CUSTOM_CRITERIA.basis,
       stabil: editForm.stabil || CUSTOM_CRITERIA.stabil,
-      pruefungsreif: CUSTOM_CRITERIA.pruefungsreif,
+      pruefungsreif: editForm.pruefungsreif || CUSTOM_CRITERIA.pruefungsreif,
     } : undefined
     updateExercise.mutate({
       id: ex.id,
@@ -167,15 +166,6 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
     }
   }
 
-  function handleNextLevel(ex: Exercise, current: Level) {
-    const next = nextLevel(current)
-    if (!next) return
-    setLevel.mutate({ exerciseId: ex.id, level: next })
-    setShowResetFor(null)
-    setLevelUpId(ex.id)
-    setTimeout(() => setLevelUpId(null), 2000)
-  }
-
   function handleLinkCommand(exerciseId: string, commandId: string) {
     linkCommand.mutate({ exerciseId, commandId })
     setShowCommandPickerFor(null)
@@ -218,7 +208,6 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                 const isCustom = !ex.isFoundational
                 const links = exerciseCommandLinks[ex.id] ?? []
                 const history = levelHistoryAll[ex.id] ?? []
-                const isLevelUp = levelUpId === ex.id
 
                 if (editingId === ex.id && isCustom) {
                   return (
@@ -241,9 +230,9 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                       />
                       <div className="flex flex-col gap-2">
                         <p className="text-xs text-stone-400 font-medium">Level-Kriterien (optional)</p>
-                        {(['aufbau', 'basis', 'stabil'] as const).map(l => (
+                        {(['aufbau', 'basis', 'stabil', 'pruefungsreif'] as const).map(l => (
                           <div key={l} className="flex items-center gap-2">
-                            <span className="text-xs text-stone-400 w-20 flex-shrink-0 capitalize">{l}:</span>
+                            <span className="text-xs text-stone-400 w-24 flex-shrink-0 capitalize">{l === 'pruefungsreif' ? 'Prüfungsreif' : l}:</span>
                             <input
                               type="text"
                               placeholder={CUSTOM_CRITERIA[l]}
@@ -274,7 +263,7 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                 }
 
                 return (
-                  <details key={ex.id} className={`bg-white rounded-xl shadow-sm group ${isLevelUp ? 'ring-2 ring-green-400' : 'border border-stone-100'}`}>
+                  <details key={ex.id} className="bg-white rounded-xl shadow-sm group border border-stone-100">
                     <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer list-none select-none active:bg-stone-50 rounded-xl">
                       <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -283,16 +272,18 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                             <span className="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full flex-shrink-0">BH-Grundlage</span>
                           )}
                         </div>
-                        <span className="text-xs text-stone-400 mt-0.5 truncate">{ex.criteria[current]}</span>
+                        <span className="text-xs text-stone-400 mt-0.5 truncate">{ex.criteria?.[current]}</span>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                        {isLevelUp && <span className="text-xs text-green-600 font-semibold animate-bounce">🎉</span>}
                         <LevelBadge level={current} />
                         <span className="text-stone-300 text-xs group-open:rotate-180 transition-transform">▾</span>
                       </div>
                     </summary>
 
                     <div className="px-4 pb-4 flex flex-col gap-4 border-t border-stone-50 pt-3">
+
+                      {/* Titel-Wiederholung damit er beim Tippen sichtbar bleibt */}
+                      <p className="text-xs font-semibold text-stone-500">{ex.name}</p>
 
                       {/* Level-Progression */}
                       <div>
@@ -305,72 +296,18 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
                           ))}
                         </div>
 
-                        {isLevelUp && (
-                          <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-2 text-center">
-                            <p className="text-xs font-semibold text-green-700">🎉 Neue Stufe erreicht: {LEVEL_LABEL[current]}!</p>
-                          </div>
-                        )}
-
-                        {next && !showResetFor && (
-                          <button
-                            onClick={() => handleNextLevel(ex, current)}
-                            className="w-full py-2.5 bg-teal-700 text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform"
-                          >
-                            Nächste Stufe erreicht → {LEVEL_LABEL[next]}
-                          </button>
-                        )}
-
                         {!next && (
                           <div className="text-center py-2">
                             <span className="text-xs text-green-600 font-semibold">✓ Höchste Stufe erreicht</span>
                           </div>
                         )}
-
-                        {!showResetFor && current !== 'nicht_begonnen' && (
-                          <button
-                            onClick={() => setShowResetFor(ex.id)}
-                            className="w-full text-xs text-stone-400 mt-1.5 py-1 active:text-stone-600"
-                          >
-                            Stufe zurücksetzen
-                          </button>
-                        )}
-
-                        {showResetFor === ex.id && (
-                          <div className="flex flex-col gap-1.5 mt-1">
-                            <p className="text-xs text-stone-400 text-center mb-1">Level manuell setzen</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {LEVEL_ORDER.map(l => (
-                                <button
-                                  key={l}
-                                  onClick={() => {
-                                    setLevel.mutate({ exerciseId: ex.id, level: l })
-                                    setShowResetFor(null)
-                                  }}
-                                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                                    current === l
-                                      ? 'bg-teal-600 text-white border-teal-600'
-                                      : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
-                                  }`}
-                                >
-                                  {LEVEL_LABEL[l]}
-                                </button>
-                              ))}
-                            </div>
-                            <button
-                              onClick={() => setShowResetFor(null)}
-                              className="text-xs text-stone-400 text-center mt-1"
-                            >
-                              Abbrechen
-                            </button>
-                          </div>
-                        )}
                       </div>
 
                       {/* Nächste Stufe Beschreibung */}
-                      {next && !isLevelUp && (
+                      {next && (
                         <div className="bg-teal-50 rounded-xl p-3">
                           <p className="text-xs font-medium text-teal-700 mb-0.5">Ziel: {LEVEL_LABEL[next]}</p>
-                          <p className="text-xs text-teal-600">{ex.criteria[next]}</p>
+                          <p className="text-xs text-teal-600">{ex.criteria?.[next]}</p>
                         </div>
                       )}
 
@@ -577,9 +514,9 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
 
                   <div className="flex flex-col gap-2">
                     <p className="text-xs text-stone-400 font-medium">Level-Kriterien (optional)</p>
-                    {(['aufbau', 'basis', 'stabil'] as const).map(l => (
+                    {(['aufbau', 'basis', 'stabil', 'pruefungsreif'] as const).map(l => (
                       <div key={l} className="flex items-center gap-2">
-                        <span className="text-xs text-stone-400 w-20 flex-shrink-0 capitalize">{l}:</span>
+                        <span className="text-xs text-stone-400 w-24 flex-shrink-0 capitalize">{l === 'pruefungsreif' ? 'Prüfungsreif' : l}:</span>
                         <input
                           type="text"
                           placeholder={CUSTOM_CRITERIA[l]}
