@@ -68,7 +68,7 @@ export function WochenPlan({ statuses, allExercises, sessions, onLogSession }: P
         )}
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {weekSuggestions.map(s => {
           const isChecked = checked.has(s.exercise.id)
           return (
@@ -80,31 +80,24 @@ export function WochenPlan({ statuses, allExercises, sessions, onLogSession }: P
                 else next.add(s.exercise.id)
                 return next
               })}
-              className={`flex items-start gap-3 text-left py-1.5 px-1 rounded-xl transition-colors ${isChecked ? 'opacity-50' : ''}`}
+              className={`flex items-center gap-3 text-left py-2 px-1 rounded-xl transition-colors ${isChecked ? 'opacity-50' : ''}`}
             >
-              <span className={`mt-0.5 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
+              <span className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
                 isChecked ? 'bg-green-500 border-green-500' : 'border-stone-300'
               }`}>
                 {isChecked && <span className="text-white text-xs font-bold leading-none">✓</span>}
               </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className={`text-sm font-medium ${isChecked ? 'line-through text-stone-400' : 'text-stone-800'}`}>
-                    {s.exercise.name}
-                  </span>
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                    s.priority === 'kritisch' ? 'bg-red-100 text-red-700' :
-                    s.priority === 'hoch' ? 'bg-orange-100 text-orange-700' :
-                    'bg-stone-100 text-stone-500'
-                  }`}>
-                    {s.priority === 'kritisch' ? '!' : s.priority === 'hoch' ? '↑' : '→'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-0.5 min-w-0">
-                  <LevelBadge level={s.currentLevel} />
-                  <span className="text-xs text-stone-400 flex-1 truncate">→ {s.exercise.criteria[s.targetLevel]}</span>
-                </div>
-              </div>
+              <span className={`text-sm font-medium flex-1 min-w-0 truncate ${isChecked ? 'line-through text-stone-400' : 'text-stone-800'}`}>
+                {s.exercise.name}
+              </span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${
+                s.priority === 'kritisch' ? 'bg-red-100 text-red-700' :
+                s.priority === 'hoch' ? 'bg-orange-100 text-orange-700' :
+                'bg-stone-100 text-stone-500'
+              }`}>
+                {s.priority === 'kritisch' ? '!' : s.priority === 'hoch' ? '↑' : '→'}
+              </span>
+              <LevelBadge level={s.currentLevel} />
             </button>
           )
         })}
