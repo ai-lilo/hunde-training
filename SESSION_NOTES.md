@@ -1,5 +1,49 @@
 # Session-Notizen — Hundetraining App
 
+## 2026-06-03 — Session-Abschluss (Hundetraining – Tab-Vereinheitlichung + Bugfixes)
+
+### Was wurde erledigt
+
+**Bugfixes Grundlagen (`GrundlagenFortschritt.tsx`)**
+- Bug: Weißer Bildschirm beim Bearbeiten → null-safe Zugriff auf `ex.criteria` in `handleEditStart` (`criteria ?? {}`)
+- Bug: Übungstitel verschwindet beim Notiz-Tippen → Titel wird jetzt am Anfang des aufgeklappten Inhalts wiederholt
+- Bug: Kein Prüfungsreif-Kriterium anlegbar → `pruefungsreif`-Feld zu `AddFormState`, `EditFormState`, `EMPTY_FORM` und Render-Array ergänzt; beide Formulare (Add + Edit) zeigen jetzt alle 4 Level-Kriterien
+- "Nächste Stufe erreicht"- und "Stufe zurücksetzen"-Buttons entfernt (Level-Änderungen nur noch über Einheit); zugehörige States und Funktionen bereinigt
+
+**Tab-Vereinheitlichung (`App.tsx`) — alle Sportarten: 📋 Übersicht · ▶️ Einheit · 📔 Tagebuch**
+- BH: `Fortschritt`-Tab entfernt, `Einheit`-Tab hinzugefügt (LogSession wird direkt im Tab-Container gerendert, nicht mehr als Fullscreen-Overlay); `BHScreen`-Type bereinigt
+- Grundlagen: `Tagebuch`-Tab neu (rendert Einheiten mit `sport === 'grundlagen'`); Labels/Icons vereinheitlicht; `GLScreen`-Type um `gl-tagebuch` erweitert; `Suspense`-Wrapper ergänzt
+- THS: Label `Fortschritt` → `Übersicht`, Icon 📈 → 📋
+- RO: Label `Schilder` → `Übersicht`, Icon angepasst
+- Aufräumen: `Progress`-Import, `handleUpdateExercise`, `handleDeleteExercise`, `useUpdateExerciseOverride`-Mutation, `useHideExercise`-Mutation aus App.tsx entfernt
+
+**BH Dashboard (`Dashboard.tsx`)**
+- Übungen in der Kategorieübersicht nicht mehr klickbar (kein `onClick` → `navigate('fortschritt')`)
+- `BHAuswertung`-Komponente in Übersicht verschoben (war in Progress-Screen)
+- "Neue Trainingseinheit"-Button entfernt (Einheit läuft jetzt über eigenen Tab)
+
+**Bug: Dog-Selection Race Condition (`AppShell.tsx`)**
+- Problem: `setDogId(dogs[0].id)` wurde direkt im Render aufgerufen (Anti-Pattern in React 18) → führte zu kurzem DogSelector-Flash ohne selektierbaren Hund
+- Fix: Auto-Auswahl des einzigen Hundes jetzt in `useEffect`; solange der Effect noch nicht ausgelöst hat, zeigt die App einen Spinner statt DogSelector
+
+**SQL-Migrationen (`supabase/migrations_manual.sql` — bereits ausgeführt)**
+- Migration 1: `hidden_exercises` — "Bleib (Dauer & Distanz)" (ID `bleib`) inkl. Sub-Übungen für alle User versteckt
+- Migration 2: `custom_exercises` — alle 5 Sitz-Übungen aus `gl_sitz` als unabhängige Kopien nach `gl_platz` und `gl_steh` dupliziert
+
+### Offene TODOs
+Keine TODO/FIXME-Kommentare im Code.
+
+### Nächster sinnvoller Schritt
+**App live testen: neue Tab-Struktur und Grundlagen-Bugs verifizieren, dann THS um Geländelauf + CSC erweitern**
+
+Details:
+- App auf iPhone/Tablet öffnen: alle 4 Sportarten auf 3-Tab-Struktur prüfen (📋 Übersicht · ▶️ Einheit · 📔 Tagebuch); Grundlagen-Tagebuch prüfen ob GL-Einheiten dort auftauchen
+- Grundlagen-Bugs verifizieren: Übung bearbeiten → kein weißer Bildschirm; Prüfungsreif-Kriterium eingeben; Titel beim Notiz-Tippen sichtbar
+- THS erweitern: Geländelauf (Zeitdisziplin wie Hürdenlauf/Slalom) und CSC (Hindernislauf-artig mit eigenem Parcours) als neue Disziplinen ergänzen — Klasseninfos (VK1/VK2/VK3) und CSC-Hindernisliste noch erfragen
+- BH-Fortschritt für Ari mit aktuellem Stand befüllen: Übungen die bereits stabil sind auf "Stabil" setzen
+
+---
+
 ## 2026-06-02 — Session-Abschluss (Hundetraining – THS Vierkampf + UX-Fixes)
 
 ### Was wurde erledigt
