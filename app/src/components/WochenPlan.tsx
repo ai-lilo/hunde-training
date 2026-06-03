@@ -68,7 +68,7 @@ export function WochenPlan({ statuses, allExercises, sessions, onLogSession }: P
         )}
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-1.5">
         {weekSuggestions.map(s => {
           const isChecked = checked.has(s.exercise.id)
           return (
@@ -80,7 +80,7 @@ export function WochenPlan({ statuses, allExercises, sessions, onLogSession }: P
                 else next.add(s.exercise.id)
                 return next
               })}
-              className={`flex items-start gap-3 text-left py-2 px-1 rounded-xl transition-colors ${isChecked ? 'opacity-50' : ''}`}
+              className={`flex items-start gap-3 text-left py-1.5 px-1 rounded-xl transition-colors ${isChecked ? 'opacity-50' : ''}`}
             >
               <span className={`mt-0.5 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
                 isChecked ? 'bg-green-500 border-green-500' : 'border-stone-300'
@@ -100,9 +100,9 @@ export function WochenPlan({ statuses, allExercises, sessions, onLogSession }: P
                     {s.priority === 'kritisch' ? '!' : s.priority === 'hoch' ? '↑' : '→'}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex items-center gap-2 mt-0.5 min-w-0">
                   <LevelBadge level={s.currentLevel} />
-                  <span className="text-xs text-stone-400">→ Ziel: {s.exercise.criteria[s.targetLevel]}</span>
+                  <span className="text-xs text-stone-400 flex-1 truncate">→ {s.exercise.criteria[s.targetLevel]}</span>
                 </div>
               </div>
             </button>
