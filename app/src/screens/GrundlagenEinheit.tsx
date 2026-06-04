@@ -89,7 +89,7 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
         <div className="flex flex-col gap-5 p-4 pb-4">
           <div className="flex items-center justify-between pt-2">
             <div>
-              <h1 className="text-2xl font-bold text-stone-800">Schnell-Einheit</h1>
+              <h1 className="text-2xl font-bold text-stone-800">Einheit eintragen</h1>
               <p className="text-sm text-stone-500 mt-0.5">Übungen antippen zum Auswählen</p>
             </div>
             <input
@@ -130,6 +130,7 @@ export function GrundlagenEinheit({ statuses, allExercises, onSave, onCancel }: 
 
                       {isChosen && draft && (
                         <div className="px-4 pb-4 flex flex-col gap-3 border-t border-teal-100 pt-3">
+                          <p className="text-sm font-semibold text-stone-700">{ex.name}</p>
                           {/* Bewertung */}
                           <div>
                             <p className="text-xs text-stone-500 mb-1.5">Wie lief es?</p>

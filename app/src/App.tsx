@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import { buildAllExercises } from './data/exercises'
 import { Dashboard } from './screens/Dashboard'
+import { getDogEmoji } from './screens/DogSelector'
 import { LogSession } from './screens/LogSession'
 import { GrundlagenFortschritt } from './screens/GrundlagenFortschritt'
 import { GrundlagenEinheit } from './screens/GrundlagenEinheit'
@@ -32,7 +33,6 @@ import { useUserSports, useAllSports } from './hooks/useUserSports'
 import { useCommands } from './hooks/useCommands'
 import { useTHSObstacleProgress } from './hooks/useTHSObstacleProgress'
 import { useTHSTimes } from './hooks/useTHSTimes'
-import type { Dog } from './hooks/useDogs'
 import type { Exercise, Level, LevelCriteria, Sport } from './data/types'
 
 type BHScreen = 'dashboard' | 'tagebuch' | 'einheit'
@@ -74,12 +74,11 @@ const THS_NAV: { id: THSScreen; label: string; icon: string }[] = [
 
 interface Props {
   dogId: string
-  dog: Dog
   userId: string
   onSwitchDog: () => void
 }
 
-export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
+export default function MainApp({ dogId, userId, onSwitchDog }: Props) {
   const [bhScreen, setBhScreen] = useState<BHScreen>('dashboard')
   const [roScreen, setRoScreen] = useState<ROScreen>('ro-fortschritt')
   const [glScreen, setGlScreen] = useState<GLScreen>('gl-fortschritt')
@@ -168,7 +167,7 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
           className="px-3 py-3 text-stone-400 text-sm flex-shrink-0"
           title="Hund wechseln"
         >
-          🐕
+          {getDogEmoji(dogId)}
         </button>
         <div className="flex flex-1 overflow-x-auto">
           {sportTabs.map(tab => (
@@ -200,7 +199,6 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
           <>
             {bhScreen === 'dashboard' && (
               <Dashboard
-                dog={dog}
                 statuses={exerciseStatuses}
                 allExercises={allExercises}
                 sessions={sessions.filter(s => s.sport === 'bh' || !s.sport)}

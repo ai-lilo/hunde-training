@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useWakeLock } from '../hooks/useWakeLock'
 import type { ExerciseStatus, Level, THSObstacleStatus } from '../data/types'
 import { THS_GEHORSAM, THS_HINDERNISSE, THS_DISZIPLIN_EXERCISE_ID, KLASSE_LABEL, computeTHSKlasse, type THSKlasse } from '../data/ths-data'
 import { LEVEL_LABEL } from '../data/labels'
@@ -23,6 +24,7 @@ type DisziplinKey = 'gehorsam' | 'huerdenlauf' | 'slalom' | 'hindernislauf'
 type Rating = 'bad' | 'ok' | 'good'
 
 export function THSEinheit({ statuses, obstacleStatuses, dogId, userId, thsSportId, onSave, onCancel }: Props) {
+  useWakeLock(true)
   const exerciseMap = Object.fromEntries(statuses.map(s => [s.exerciseId, s.level]))
   const obstacleMap = Object.fromEntries(obstacleStatuses.map(s => [s.obstacleId, s.level]))
   const klasse: THSKlasse = computeTHSKlasse(exerciseMap, obstacleMap)

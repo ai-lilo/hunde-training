@@ -65,7 +65,7 @@ export function AppShell() {
 
   // Dev-Bypass (nur localhost, keine echte Auth nötig)
   if (import.meta.env.DEV && devBypass) {
-    return <MainApp dogId={DEV_DOG.id} dog={DEV_DOG} userId={DEV_DOG.owner_id} onSwitchDog={() => {}} />
+    return <MainApp dogId={DEV_DOG.id} userId={DEV_DOG.owner_id} onSwitchDog={() => {}} />
   }
 
   // Auth-Fehler (z.B. abgelaufener Magic Link)
@@ -140,5 +140,5 @@ export function AppShell() {
     return <DogSelector onSelect={setDogId} />
   }
 
-  return <MainApp dogId={validDog.id} dog={validDog} userId={user.id} onSwitchDog={() => setShowDogSelector(true)} />
+  return <MainApp dogId={validDog.id} userId={user.id} onSwitchDog={() => setShowDogSelector(true)} />
 }

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useWakeLock } from '../hooks/useWakeLock'
 import type { Level, ROSign, ROSignStatus } from '../data/types'
 import { RO_SIGNS } from '../data/ro-signs'
 import { LevelBadge } from '../components/LevelBadge'
@@ -68,6 +69,7 @@ function suggestSigns(roSignStatuses: ROSignStatus[]): string[] {
 }
 
 export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
+  useWakeLock(true)
   const statusMap = useMemo(
     () => Object.fromEntries(roSignStatuses.map(s => [s.signId, s])),
     [roSignStatuses]

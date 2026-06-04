@@ -146,24 +146,24 @@ export function Einstellungen({ userId, onClose }: Props) {
           <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
             Sportarten
           </h2>
-          <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {allSports.map(sport => {
               const isActive = activeIds.includes(sport.id)
               return (
                 <button
                   key={sport.id}
                   onClick={() => toggleSport(sport.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-colors active:scale-95 ${
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-left transition-colors active:scale-95 ${
                     isActive
                       ? 'border-teal-500 bg-teal-50'
                       : 'border-stone-200 bg-white'
                   }`}
                 >
-                  <span className="text-2xl">{sport.icon}</span>
-                  <span className={`font-medium ${isActive ? 'text-teal-800' : 'text-stone-700'}`}>
+                  <span className="text-xl">{sport.icon}</span>
+                  <span className={`font-medium text-sm flex-1 ${isActive ? 'text-teal-800' : 'text-stone-700'}`}>
                     {sport.name}
                   </span>
-                  {isActive && <span className="ml-auto text-teal-600">✓</span>}
+                  {isActive && <span className="text-teal-600 text-xs">✓</span>}
                 </button>
               )
             })}

@@ -6,10 +6,7 @@ import { LevelBadge } from '../components/LevelBadge'
 import { WochenPlan } from '../components/WochenPlan'
 import { BHAuswertung } from '../components/BHAuswertung'
 import type { RecentSave } from '../App'
-import type { Dog } from '../hooks/useDogs'
-
 interface Props {
-  dog: Dog
   statuses: ExerciseStatus[]
   allExercises: Exercise[]
   sessions: TrainingSession[]
@@ -20,7 +17,7 @@ interface Props {
 
 const RATING_EMOJI: Record<1 | 2 | 3, string> = { 1: '😕', 2: '🙂', 3: '😄' }
 
-export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, onDismissRecentSave, onNavigate }: Props) {
+export function Dashboard({ statuses, allExercises, sessions, recentSave, onDismissRecentSave, onNavigate }: Props) {
   const exerciseMap = useMemo(() => Object.fromEntries(allExercises.map(e => [e.id, e])), [allExercises])
   const { done, total, percent } = getBhProgress(statuses, allExercises)
   const map = getStatusMap(statuses, allExercises)
@@ -30,19 +27,6 @@ export function Dashboard({ dog, statuses, allExercises, sessions, recentSave, o
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-6 animate-fadein">
-      {/* Header — persönlich und warm */}
-      <div className="pt-3 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center text-2xl flex-shrink-0">
-          🐾
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-stone-800 leading-tight">{dog.name}</h1>
-          <p className="text-sm text-stone-500">
-            {[dog.breed, 'Begleithundeprüfung'].filter(Boolean).join(' · ')}
-          </p>
-        </div>
-      </div>
-
       {/* ── Gerade gespeichert ── */}
       {recentSave && (
         <div className="bg-green-50 rounded-2xl border border-green-200 overflow-hidden">
