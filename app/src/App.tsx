@@ -323,8 +323,12 @@ export default function MainApp({ dogId, dog, userId, onSwitchDog }: Props) {
               {roScreen === 'ro-einheit' && (
                 <ROEinheit
                   roSignStatuses={roSignStatuses}
-                  onSave={(signIds, note, feedback, date) => {
+                  onSave={(signIds, note, feedback, levelChanges, date) => {
                     addROSession.mutate({ signIds, generalNote: note, feedback, date, sportId: roSportId })
+                    Object.entries(levelChanges).forEach(([signId, level]) => {
+                      const current = roSignStatuses.find(s => s.signId === signId)?.level ?? 'nicht_begonnen'
+                      if (level !== current) setROSignLevel.mutate({ signId, level })
+                    })
                     setRoScreen('ro-tagebuch')
                   }}
                   onCancel={() => setRoScreen('ro-fortschritt')}

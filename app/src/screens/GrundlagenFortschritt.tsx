@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Exercise, ExerciseOverride, ExerciseStatus, LevelCriteria, Command } from '../data/types'
 import { CUSTOM_CRITERIA } from '../data/exercises'
 import { getStatusMap, levelIndex, nextLevel } from '../data/progression'
@@ -51,6 +51,14 @@ interface Props {
 }
 
 export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId, userId, allCommands, onAddExercise }: Props) {
+  const [dieseWoche, setDieseWoche] = useState(() => {
+    try { return localStorage.getItem(`diese-woche-${dogId}`) ?? '' } catch { return '' }
+  })
+
+  useEffect(() => {
+    try { localStorage.setItem(`diese-woche-${dogId}`, dieseWoche) } catch {}
+  }, [dieseWoche, dogId])
+
   const [addingTo, setAddingTo] = useState<string | null>(null)
   const [addForm, setAddForm] = useState<AddFormState>(EMPTY_FORM)
   const [editNotes, setEditNotes] = useState<Record<string, string>>({})
@@ -176,6 +184,18 @@ export function GrundlagenFortschritt({ statuses, allExercises, overrides, dogId
       <div className="pt-2">
         <h1 className="text-2xl font-bold text-stone-800">Grundlagen</h1>
         <p className="text-sm text-stone-500 mt-0.5">Fundament für alle Sportarten</p>
+      </div>
+
+      {/* Diese Woche üben */}
+      <div>
+        <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Diese Woche üben</p>
+        <textarea
+          rows={2}
+          placeholder="Was übe ich diese Woche…"
+          value={dieseWoche}
+          onChange={e => setDieseWoche(e.target.value)}
+          className="w-full px-3 py-2.5 text-sm rounded-xl border border-stone-200 text-stone-700 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-300 resize-none"
+        />
       </div>
 
       {GL_CATEGORIES.map(cat => {

@@ -1,13 +1,17 @@
-﻿import { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import type { Level, ROSign, ROSignStatus } from '../data/types'
 import { RO_SIGNS } from '../data/ro-signs'
 import { LevelBadge } from '../components/LevelBadge'
+import { LEVEL_LABEL } from '../data/labels'
+import { nextLevel } from '../data/progression'
 
 interface Props {
   roSignStatuses: ROSignStatus[]
-  onSave: (signIds: string[], note: string, feedback: Record<string, 'gut' | 'weiter'>, date?: string) => void
+  onSave: (signIds: string[], note: string, feedback: Record<string, 'gut' | 'weiter'>, levelChanges: Record<string, Level>, date?: string) => void
   onCancel: () => void
 }
+
+type Rating = 'bad' | 'ok' | 'good'
 
 const ZUSATZ_IDS = ['z0a', 'z0b', 'z0c', 'z0d']
 
@@ -28,7 +32,6 @@ function suggestSigns(roSignStatuses: ROSignStatus[]): string[] {
     return status.level === 'stabil' || status.level === 'pruefungsreif'
   })
 
-  // Sort by Leitner urgency: lower box + older lastPracticedAt = higher priority
   eligible.sort((a, b) => {
     const sa = statusMap[a.id]
     const sb = statusMap[b.id]
@@ -46,8 +49,6 @@ function suggestSigns(roSignStatuses: ROSignStatus[]): string[] {
   })
 
   const base = eligible.slice(0, 10)
-
-  // Insert a random Zusatzschild after each sign with Vorsitz/Vorsteh/Vorplatz
   const result: string[] = []
   const usedZusatz = new Set<string>()
 
@@ -80,7 +81,9 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>(initialIds)
   const [swapTargetId, setSwapTargetId] = useState<string | null>(null)
   const [note, setNote] = useState('')
-  const [feedback, setFeedback] = useState<Record<string, 'gut' | 'weiter'>>({})
+  const [ratings, setRatings] = useState<Record<string, Rating>>({})
+  const [levelChoices, setLevelChoices] = useState<Record<string, Level>>({})
+  const [signNotes, setSignNotes] = useState<Record<string, string>>({})
 
   const eligibleForSwap = useMemo(() => {
     return RO_SIGNS.filter(sign => {
@@ -104,6 +107,19 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
     const status = statusMap[s.id]
     return status && (status.level === 'stabil' || status.level === 'pruefungsreif')
   }).length
+
+  const allRated = selectedIds.every(id => ratings[id] != null)
+
+  function handleSave() {
+    const feedback: Record<string, 'gut' | 'weiter'> = {}
+    const levelChanges: Record<string, Level> = {}
+    for (const id of selectedIds) {
+      feedback[id] = ratings[id] === 'good' ? 'gut' : 'weiter'
+      const chosen = levelChoices[id]
+      if (chosen) levelChanges[id] = chosen
+    }
+    onSave(selectedIds, note, feedback, levelChanges)
+  }
 
   if (eligibleCount === 0) {
     return (
@@ -142,19 +158,22 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
         </div>
       )}
 
-      {/* Suggested signs */}
-      <div className="flex flex-col gap-2">
+      {/* Heute üben */}
+      <div className="flex flex-col gap-2.5">
+        <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Heute üben</p>
         {selectedIds.map(id => {
           const sign = signMap[id]
-          const level: Level = statusMap[id]?.level ?? 'nicht_begonnen'
+          const currentLevel: Level = statusMap[id]?.level ?? 'nicht_begonnen'
+          const next = nextLevel(currentLevel)
           const isSwapping = swapTargetId === id
           if (!sign) return null
 
-          const fb = feedback[id] ?? null
+          const rating = ratings[id] ?? null
+          const levelChoice = levelChoices[id] ?? currentLevel
 
           return (
-            <div key={id} className="bg-white rounded-xl border border-stone-100 px-4 py-3">
-              <div className="flex items-start justify-between gap-2">
+            <div key={id} className={`rounded-xl border transition-all ${rating !== null ? 'border-teal-300 bg-teal-50 shadow-sm' : 'bg-white border-stone-100'}`}>
+              <div className="flex items-start justify-between gap-2 px-4 pt-3 pb-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono text-stone-400">{sign.number}</span>
@@ -163,7 +182,7 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
                   <p className="text-xs text-stone-500 mt-0.5 leading-snug">{sign.hauptbestandteil}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                  <LevelBadge level={level} />
+                  <LevelBadge level={currentLevel} />
                   <button
                     onClick={() => setSwapTargetId(isSwapping ? null : id)}
                     className="text-xs text-stone-400 active:text-stone-600"
@@ -173,31 +192,65 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-2.5">
-                <button
-                  onClick={() => setFeedback(prev => ({ ...prev, [id]: 'gut' }))}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                    fb === 'gut'
-                      ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
-                      : 'bg-stone-50 text-stone-500 border-stone-200 active:bg-stone-100'
-                  }`}
-                >
-                  Gut
-                </button>
-                <button
-                  onClick={() => setFeedback(prev => ({ ...prev, [id]: 'weiter' }))}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                    fb === 'weiter'
-                      ? 'bg-teal-100 text-teal-700 border-teal-300'
-                      : 'bg-stone-50 text-stone-500 border-stone-200 active:bg-stone-100'
-                  }`}
-                >
-                  Weiter üben
-                </button>
+              {/* Wie lief es? */}
+              <div className="px-4 pb-3 flex gap-2">
+                {(['bad', 'ok', 'good'] as Rating[]).map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setRatings(prev => ({ ...prev, [id]: r }))}
+                    className={`flex-1 py-2 rounded-xl text-xl transition-colors ${
+                      rating === r ? 'bg-teal-100 ring-2 ring-teal-400' : 'bg-white border border-stone-200'
+                    }`}
+                  >
+                    {r === 'good' ? '😄' : r === 'ok' ? '🙂' : '😕'}
+                  </button>
+                ))}
               </div>
 
+              {/* Level + Notiz nach Rating */}
+              {rating !== null && (
+                <div className="px-4 pb-3 flex flex-col gap-2.5 border-t border-teal-100 pt-2.5">
+                  <div>
+                    <p className="text-xs text-stone-500 mb-1.5">Level nach Einheit</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setLevelChoices(p => ({ ...p, [id]: currentLevel }))}
+                        className={`flex-1 py-2 rounded-xl text-xs border transition-colors ${
+                          levelChoice === currentLevel
+                            ? 'bg-teal-500 text-white border-teal-500 font-semibold'
+                            : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
+                        }`}
+                      >
+                        {LEVEL_LABEL[currentLevel]}
+                        <span className="block text-[10px] opacity-70">Aktuell beibehalten</span>
+                      </button>
+                      {next && (
+                        <button
+                          onClick={() => setLevelChoices(p => ({ ...p, [id]: next }))}
+                          className={`flex-1 py-2 rounded-xl text-xs border transition-colors ${
+                            levelChoice === next
+                              ? 'bg-green-500 text-white border-green-500 font-semibold'
+                              : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
+                          }`}
+                        >
+                          {LEVEL_LABEL[next]}
+                          <span className="block text-[10px] opacity-70">Level up! 🎉</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Notiz (optional)"
+                    value={signNotes[id] ?? ''}
+                    onChange={e => setSignNotes(p => ({ ...p, [id]: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-teal-300 bg-white"
+                  />
+                </div>
+              )}
+
               {isSwapping && (
-                <div className="mt-3 border-t border-stone-100 pt-2">
+                <div className="mx-4 mb-3 border-t border-stone-100 pt-2">
                   <p className="text-xs text-stone-400 mb-2">Ersetzen durch:</p>
                   <div className="flex flex-col gap-1">
                     {eligibleForSwap.map(s => (
@@ -224,7 +277,7 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
         })}
       </div>
 
-      {/* Note */}
+      {/* Einheits-Notiz */}
       <div className="bg-white rounded-xl border border-stone-100 px-4 py-3">
         <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Notiz (optional)</label>
         <textarea
@@ -236,17 +289,16 @@ export function ROEinheit({ roSignStatuses, onSave, onCancel }: Props) {
         />
       </div>
 
-      {/* Save */}
-      {!selectedIds.every(id => feedback[id] != null) && (
+      {!allRated && (
         <p className="text-xs text-center text-stone-400 -mb-2">
-          Bitte für jedes Schild „Gut" oder „Weiter üben" auswählen.
+          Bitte für jedes Schild eine Bewertung auswählen.
         </p>
       )}
       <button
-        disabled={!selectedIds.every(id => feedback[id] != null)}
-        onClick={() => onSave(selectedIds, note, feedback)}
+        disabled={!allRated}
+        onClick={handleSave}
         className={`rounded-xl py-3.5 text-sm font-semibold transition-colors ${
-          selectedIds.every(id => feedback[id] != null)
+          allRated
             ? 'bg-teal-600 text-white active:bg-teal-700'
             : 'bg-stone-200 text-stone-400 cursor-not-allowed'
         }`}

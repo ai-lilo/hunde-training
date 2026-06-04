@@ -1,16 +1,12 @@
 import { useState, useMemo } from 'react'
 import type { ExerciseStatus, THSObstacleStatus, THSTimeRecord, Level } from '../data/types'
 import {
-  THS_GEHORSAM, THS_HINDERNISSE, THS_DISZIPLIN_INFO, THS_DISZIPLIN_EXERCISE_ID, THS_DISZIPLIN_LEVELS,
+  THS_GEHORSAM, THS_HINDERNISSE, THS_DISZIPLIN_INFO, THS_DISZIPLIN_EXERCISE_ID,
   KLASSE_LABEL, DISZIPLIN_LABEL, computeTHSKlasse,
   type THSKlasse, type THSDisziplin,
 } from '../data/ths-data'
-import { LEVEL_LABEL, LEVEL_ORDER } from '../data/labels'
 import { LevelBadge } from '../components/LevelBadge'
-import { useSetExerciseLevel } from '../hooks/useExerciseProgress'
-import { useSetTHSObstacleLevel } from '../hooks/useTHSObstacleProgress'
 import { useAddTHSTime, useDeleteTHSTime, formatTime, parseTimeInput } from '../hooks/useTHSTimes'
-import { levelIndex } from '../data/progression'
 
 const DISZIPLINEN: THSDisziplin[] = ['gehorsam', 'huerdenlauf', 'slalom', 'hindernislauf']
 
@@ -25,14 +21,11 @@ interface Props {
 
 export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userId, onNavigateToEinheit }: Props) {
   const [tab, setTab] = useState<THSDisziplin>('gehorsam')
-  const [editLevelFor, setEditLevelFor] = useState<string | null>(null)
   const [showTimeFormFor, setShowTimeFormFor] = useState<THSDisziplin | null>(null)
   const [timeInput, setTimeInput] = useState('')
   const [timeNote, setTimeNote] = useState('')
   const [timeError, setTimeError] = useState(false)
 
-  const setExerciseLevel = useSetExerciseLevel(dogId, userId)
-  const setObstacleLevel = useSetTHSObstacleLevel(dogId, userId)
   const addTime = useAddTHSTime(dogId, userId)
   const deleteTime = useDeleteTHSTime(dogId)
 
@@ -123,52 +116,13 @@ export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userI
             <div className="flex flex-col gap-3">
               {gehorsamUebungen.map(u => {
                 const current = exerciseMap[u.id] ?? 'nicht_begonnen'
-                const idx = levelIndex(current)
-                const isEditing = editLevelFor === u.id
                 return (
-                  <div key={u.id} className="bg-white rounded-xl border border-stone-100 shadow-sm">
-                    <button
-                      className="w-full flex items-center justify-between px-4 py-3.5 active:bg-stone-50 rounded-xl"
-                      onClick={() => setEditLevelFor(isEditing ? null : u.id)}
-                    >
-                      <div className="text-left flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-stone-800 truncate">{u.name}</p>
-                        <p className="text-xs text-stone-400 mt-0.5 truncate">{u.beschreibung}</p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                        <LevelBadge level={current} />
-                        <span className={`text-stone-300 text-xs transition-transform ${isEditing ? 'rotate-180' : ''}`}>▾</span>
-                      </div>
-                    </button>
-                    {isEditing && (
-                      <div className="px-4 pb-4 border-t border-stone-50 pt-3">
-                        {/* Balken */}
-                        <div className="flex gap-1 mb-3">
-                          {LEVEL_ORDER.filter(l => l !== 'nicht_begonnen').map((l, i) => (
-                            <div key={l} className={`flex-1 h-1.5 rounded-full ${i < idx ? 'bg-teal-400' : 'bg-stone-100'}`} />
-                          ))}
-                        </div>
-                        <p className="text-xs text-stone-400 mb-2">Level setzen:</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {LEVEL_ORDER.map(l => (
-                            <button
-                              key={l}
-                              onClick={() => {
-                                setExerciseLevel.mutate({ exerciseId: u.id, level: l })
-                                setEditLevelFor(null)
-                              }}
-                              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                                current === l
-                                  ? 'bg-teal-600 text-white border-teal-600'
-                                  : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
-                              }`}
-                            >
-                              {LEVEL_LABEL[l]}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div key={u.id} className="bg-white rounded-xl border border-stone-100 shadow-sm flex items-center justify-between px-4 py-3.5">
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-stone-800 truncate">{u.name}</p>
+                      <p className="text-xs text-stone-400 mt-0.5 truncate">{u.beschreibung}</p>
+                    </div>
+                    <LevelBadge level={current} />
                   </div>
                 )
               })}
@@ -182,7 +136,6 @@ export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userI
             discipline={tab}
             klasse={klasse}
             level={(exerciseMap[THS_DISZIPLIN_EXERCISE_ID[tab]] ?? 'nicht_begonnen') as Level}
-            onLevelChange={l => setExerciseLevel.mutate({ exerciseId: THS_DISZIPLIN_EXERCISE_ID[tab], level: l })}
             times={times.filter(t => t.discipline === tab)}
             showForm={showTimeFormFor === tab}
             timeInput={timeInput}
@@ -204,69 +157,28 @@ export function THSFortschritt({ statuses, obstacleStatuses, times, dogId, userI
             <div className="flex flex-col gap-2">
               {THS_HINDERNISSE.map(h => {
                 const current = obstacleMap[h.id] ?? 'nicht_begonnen'
-                const idx = levelIndex(current)
-                const isEditing = editLevelFor === h.id
                 return (
-                  <div key={h.id} className="bg-white rounded-xl border border-stone-100 shadow-sm">
-                    <button
-                      className="w-full flex items-center justify-between px-4 py-3 active:bg-stone-50 rounded-xl"
-                      onClick={() => setEditLevelFor(isEditing ? null : h.id)}
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <span className="w-6 h-6 rounded-full bg-stone-100 text-stone-500 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                          {h.position}
-                        </span>
-                        <div className="text-left min-w-0">
-                          <p className="text-sm font-semibold text-stone-800">{h.name}</p>
-                          {h.massangabe && <p className="text-xs text-stone-400">{h.massangabe}</p>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                        <LevelBadge level={current} />
-                        <span className={`text-stone-300 text-xs transition-transform ${isEditing ? 'rotate-180' : ''}`}>▾</span>
-                      </div>
-                    </button>
-                    {isEditing && (
-                      <div className="px-4 pb-4 border-t border-stone-50 pt-3">
-                        <div className="flex gap-1 mb-3">
-                          {LEVEL_ORDER.filter(l => l !== 'nicht_begonnen').map((l, i) => (
-                            <div key={l} className={`flex-1 h-1.5 rounded-full ${i < idx ? 'bg-teal-400' : 'bg-stone-100'}`} />
-                          ))}
-                        </div>
-                        <p className="text-xs text-stone-400 mb-2">Level setzen:</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {LEVEL_ORDER.map(l => (
-                            <button
-                              key={l}
-                              onClick={() => {
-                                setObstacleLevel.mutate({ obstacleId: h.id, level: l as Level })
-                                setEditLevelFor(null)
-                              }}
-                              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                                current === l
-                                  ? 'bg-teal-600 text-white border-teal-600'
-                                  : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
-                              }`}
-                            >
-                              {LEVEL_LABEL[l]}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div key={h.id} className="bg-white rounded-xl border border-stone-100 shadow-sm flex items-center px-4 py-3 gap-3">
+                    <span className="w-6 h-6 rounded-full bg-stone-100 text-stone-500 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                      {h.position}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-stone-800">{h.name}</p>
+                      {h.massangabe && <p className="text-xs text-stone-400">{h.massangabe}</p>}
+                    </div>
+                    <LevelBadge level={current} />
                   </div>
                 )
               })}
             </div>
 
-            {/* Gesamtzeit + Level-Status */}
+            {/* Gesamtzeiten */}
             <div className="mt-2 border-t border-stone-100 pt-4">
-              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Gesamtzeiten & Status</p>
+              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Gesamtzeiten</p>
               <TimeDisziplinView
                 discipline="hindernislauf"
                 klasse={klasse}
                 level={(exerciseMap[THS_DISZIPLIN_EXERCISE_ID['hindernislauf']] ?? 'nicht_begonnen') as Level}
-                onLevelChange={l => setExerciseLevel.mutate({ exerciseId: THS_DISZIPLIN_EXERCISE_ID['hindernislauf'], level: l })}
                 times={times.filter(t => t.discipline === 'hindernislauf')}
                 showForm={showTimeFormFor === 'hindernislauf'}
                 timeInput={timeInput}
@@ -300,7 +212,6 @@ interface TimeDisziplinViewProps {
   discipline: THSDisziplin
   klasse: THSKlasse
   level: Level
-  onLevelChange: (l: Level) => void
   times: THSTimeRecord[]
   showForm: boolean
   timeInput: string
@@ -316,15 +227,12 @@ interface TimeDisziplinViewProps {
 }
 
 function TimeDisziplinView({
-  discipline, klasse, level, onLevelChange, times, showForm,
+  discipline, klasse, level, times, showForm,
   timeInput, timeNote, timeError,
   onOpenForm, onCloseForm, onTimeInputChange, onTimeNoteChange, onSubmit, onDelete,
   compact,
 }: TimeDisziplinViewProps) {
-  const [showLevelPicker, setShowLevelPicker] = useState(false)
   const bestTime = times.length > 0 ? Math.min(...times.map(t => t.timeSeconds)) : null
-  const thsLevelIdx = THS_DISZIPLIN_LEVELS.indexOf(level as typeof THS_DISZIPLIN_LEVELS[number])
-  const thsBars = THS_DISZIPLIN_LEVELS.filter(l => l !== 'nicht_begonnen')
 
   return (
     <div className="flex flex-col gap-3">
@@ -334,42 +242,10 @@ function TimeDisziplinView({
         </p>
       )}
 
-      {/* Level-Status */}
-      <div className="bg-white rounded-xl border border-stone-100 shadow-sm">
-        <button
-          className="w-full flex items-center justify-between px-4 py-3 active:bg-stone-50 rounded-xl"
-          onClick={() => setShowLevelPicker(p => !p)}
-        >
-          <span className="text-sm font-semibold text-stone-700">Trainingsstand</span>
-          <div className="flex items-center gap-2">
-            <LevelBadge level={level} />
-            <span className={`text-stone-300 text-xs transition-transform ${showLevelPicker ? 'rotate-180' : ''}`}>▾</span>
-          </div>
-        </button>
-        {showLevelPicker && (
-          <div className="px-4 pb-4 border-t border-stone-50 pt-3">
-            <div className="flex gap-1 mb-3">
-              {thsBars.map((_, i) => (
-                <div key={i} className={`flex-1 h-1.5 rounded-full ${i < thsLevelIdx ? 'bg-teal-400' : 'bg-stone-100'}`} />
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {THS_DISZIPLIN_LEVELS.map(l => (
-                <button
-                  key={l}
-                  onClick={() => { onLevelChange(l as Level); setShowLevelPicker(false) }}
-                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                    level === l
-                      ? 'bg-teal-600 text-white border-teal-600'
-                      : 'bg-white text-stone-600 border-stone-200 active:bg-stone-50'
-                  }`}
-                >
-                  {LEVEL_LABEL[l]}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+      {/* Trainingsstand (read-only) */}
+      <div className="bg-white rounded-xl border border-stone-100 shadow-sm flex items-center justify-between px-4 py-3">
+        <span className="text-sm font-semibold text-stone-700">Trainingsstand</span>
+        <LevelBadge level={level} />
       </div>
 
       {/* Bestzeit */}
@@ -458,3 +334,4 @@ function TimeDisziplinView({
     </div>
   )
 }
+
