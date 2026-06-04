@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Exercise, ExerciseOverride, ExerciseStatus, Level, LevelCriteria, Command } from '../data/types'
+import type { Exercise, ExerciseOverride, ExerciseStatus, LevelCriteria, Command } from '../data/types'
 import { CUSTOM_CRITERIA } from '../data/exercises'
 import { getStatusMap, levelIndex, nextLevel } from '../data/progression'
 import { LEVEL_LABEL, LEVEL_ORDER } from '../data/labels'

@@ -33,7 +33,7 @@ import { useCommands } from './hooks/useCommands'
 import { useTHSObstacleProgress } from './hooks/useTHSObstacleProgress'
 import { useTHSTimes } from './hooks/useTHSTimes'
 import type { Dog } from './hooks/useDogs'
-import type { Exercise, Level, ExerciseOverride, LevelCriteria, Sport } from './data/types'
+import type { Exercise, Level, LevelCriteria, Sport } from './data/types'
 
 type BHScreen = 'dashboard' | 'tagebuch' | 'einheit'
 type ROScreen = 'ro-fortschritt' | 'ro-einheit' | 'ro-tagebuch'
